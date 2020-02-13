@@ -14,14 +14,14 @@ using namespace std;
 
 
 int main() {
-    int numberOfDimensions  = 1;            // Number of dimensions.
-    int numberOfParticles   = 1;            // Number of particles (N).
-    int numberOfSteps       = int (1e6);
+    int numberOfDimensions  = 3;
+    int numberOfParticles   = 10;
+    int numberOfSteps       = (int) 1e6;
     double omega            = 1.0;          // Oscillator frequency.
     double alpha            = 0.5;          // Variational parameter.
-    double beta             = 1.0;          // Variational parameter, case dependent.
-    double stepLength       = 0.1;          // Metropolis step length.
-    double equilibration    = 0.1;          // Amount of the total steps used for equilibration.
+    double stepLength       = 0.5;          // Metropolis step length.
+    double equilibration    = 0.2;          // Amount of the total steps used
+    // for equilibration.
 
     System* system = new System();
     system->setHamiltonian              (new HarmonicOscillator(system, omega));
@@ -35,5 +35,6 @@ int main() {
     auto end = chrono::system_clock::now();
     chrono::duration<double> diff = end-start;
     cout << "Computation time = " << diff.count() << "s\n" << endl;
+
     return 0;
 }

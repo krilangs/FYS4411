@@ -1,7 +1,7 @@
 #include "system.h"
 #include <cassert>
-#include <vector>
 #include <cmath>
+#include <vector>
 #include "sampler.h"
 #include "particle.h"
 #include "WaveFunctions/wavefunction.h"
@@ -17,7 +17,6 @@ bool System::metropolisStep() {
      * accepted by the Metropolis test (compare the wave function evaluated
      * at this new position with the one at the old position).
      */
-    // Choose random particle
     int randparticle = Random::nextInt(m_numberOfParticles);
 
     vector <double> r_old = m_particles.at(randparticle)->getPosition();
@@ -50,16 +49,15 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
+    m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
+
     getSampler()->setStepNumber(0);
     getSampler()->setAcceptedNumber(0);
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
 
-    // Initial values
     setDistanceMatrix(computematrixdistance(m_particles));
     m_psiOld = m_waveFunction->evaluate(m_particles);
     getSampler()->setEnergy(getHamiltonian()->computeLocalEnergy(m_particles));
-    setQuantumForce(m_waveFunction->QuantumForce(m_particles));
-    setHistogram();
 
     for (int i=0; i < numberOfMetropolisSteps; i++) {
         bool acceptedStep = metropolisStep();
@@ -76,20 +74,68 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_sampler->printOutputToTerminal();
 }
 
-void System::setHistogram()
-{
-    vector<int> histogram(getBins());
-    m_histogram = histogram;
+bool System::updateDistanceMatrix( std::vector<class Particle*> particles, int randparticle){
+    double temp = 0;
+    for (int j = 0; j < randparticle; j++){
+        temp = 0;
+        for (int d = 0; d < m_numberOfDimensions; d++){
+            temp += (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]) *
+                    (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]);
+        }
+        m_distanceMatrix[randparticle][j] = sqrt(temp);
+
+        m_distanceMatrix[j][randparticle] = m_distanceMatrix[randparticle][j];
+    }
+    for (int j = randparticle+1; j < m_numberOfParticles; j++){
+        temp = 0;
+        for (int d = 0; d < m_numberOfDimensions; d++){
+            temp += (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]) *
+                    (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]);
+        }
+        m_distanceMatrix[randparticle][j] = sqrt(temp);
+
+        m_distanceMatrix[j][randparticle] = m_distanceMatrix[randparticle][j];
+
+    }
+    return false;
 }
 
-int System::getBins() const
-{
-    return m_bins;
+std::vector<vector<double>> System::computematrixdistance(std::vector<class Particle*> particles){
+
+    vector<vector<double>> distancematrix(m_numberOfParticles, vector<double>(m_numberOfParticles));
+    double temp=0;
+    int j=0;
+    while(j < m_numberOfParticles){
+        temp = 0;
+        for(int i = 0; i < j; i++){
+
+            for(int k=0;k<m_numberOfDimensions;k++){
+                temp+=(particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]) *
+                      (particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]);
+            }
+            distancematrix[i][j]=sqrt(temp);
+            distancematrix[j][i]=distancematrix[i][j];
+        }
+
+        j++;
+    }
+
+    return distancematrix;
 }
 
-void System::setBins(int bins)
+void System::setDistanceMatrix(const std::vector<vector<double> > &distanceMatrix)
 {
-    m_bins = bins;
+    m_distanceMatrix = distanceMatrix;
+}
+
+std::vector<vector<double> > System::getDistanceMatrix() const
+{
+    return m_distanceMatrix;
+}
+
+double System::getDistanceMatrixij(int i, int j) const
+{
+    return m_distanceMatrix[i][j];
 }
 
 void System::setNumberOfParticles(int numberOfParticles) {
@@ -130,34 +176,4 @@ double System::getPsiOld() const
 void System::setPsiOld(double psiOld)
 {
     m_psiOld = psiOld;
-}
-
-bool System::updateDistanceMatrix( std::vector<class Particle*> particles, int randparticle){
-    double temp = 0;
-    for (int j = 0; j < randparticle; j++){
-        temp = 0;
-        for (int d = 0; d < m_numberOfDimensions; d++){
-            temp += (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]) *
-                    (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]);
-        }
-        m_distanceMatrix[randparticle][j] = sqrt(temp);
-        if (m_distanceMatrix[randparticle][j] < getinteractionSize()){
-            return true;
-        }
-        m_distanceMatrix[j][randparticle] = m_distanceMatrix[randparticle][j];
-    }
-    for (int j = randparticle+1; j < m_numberOfParticles; j++){
-        temp = 0;
-        for (int d = 0; d < m_numberOfDimensions; d++){
-            temp += (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]) *
-                    (particles.at(randparticle)->getPosition()[d] - particles.at(j)->getPosition()[d]);
-        }
-        m_distanceMatrix[randparticle][j] = sqrt(temp);
-        if (m_distanceMatrix[randparticle][j] < getinteractionSize()){
-            return true;
-        }
-        m_distanceMatrix[j][randparticle] = m_distanceMatrix[randparticle][j];
-
-    }
-    return false;
 }

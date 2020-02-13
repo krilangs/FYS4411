@@ -58,6 +58,8 @@ void Sampler::printOutputToTerminal() {
     cout << endl;
     cout << "  -- Results -- " << endl;
     cout << " Energy : " << m_energy << endl;
+    //cout << " St. dev: " << sqrt(m_cumulativeEnergySquared - m_energy*m_energy) / sqrt(ms) << endl;
+    //cout << " Acceptance ratio: " << m_acceptedNumber/m_stepNumber << endl;
     cout << endl;
 }
 
@@ -65,17 +67,23 @@ void Sampler::computeAverages() {
     /* Compute the averages of the sampled quantities. You need to think
      * thoroughly through what is written here currently; is this correct?
      */
-    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction());
+    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps());
+    //m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction();
 }
 
-int Sampler::getStepNumber() const
+void Sampler::setEnergy(double energy)
 {
-    return m_stepNumber;
+    m_energy = energy;
 }
 
 void Sampler::setStepNumber(int stepNumber)
 {
     m_stepNumber = stepNumber;
+}
+
+int Sampler::getStepNumber() const
+{
+    return m_stepNumber;
 }
 
 int Sampler::getAcceptedNumber() const
@@ -86,9 +94,4 @@ int Sampler::getAcceptedNumber() const
 void Sampler::setAcceptedNumber(int acceptedNumber)
 {
     m_acceptedNumber = acceptedNumber;
-}
-
-void Sampler::setEnergy(double energy)
-{
-    m_energy = energy;
 }

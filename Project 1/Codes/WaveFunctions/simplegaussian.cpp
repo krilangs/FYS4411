@@ -25,7 +25,7 @@ double SimpleGaussian::evaluate(std::vector<class Particle*> particles) {
 
     for (int i=0; i < m_system->getNumberOfParticles(); i++){
         for (int d=0; d < m_system->getNumberOfDimensions(); d++){
-            r_sqr += particles.at(i)->getPosition()[d]*particles.at(i)->getPosition()[d]*m_parameters[d];
+            r_sqr += particles.at(i)->getPosition()[d]*particles.at(i)->getPosition()[d]*m_parameters[0];
         }
     }
 
@@ -42,18 +42,17 @@ double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> part
      * Schrödinger equation to see how the two are related).
      */
     double one = 0;
-    double interaction = 0;
 
     // For a single particle
     for (int i=0; i < m_system->getNumberOfParticles(); i++){
         for (int d=0; d < m_system->getNumberOfDimensions(); d++){
-            one += m_parameters[d]*m_parameters[d]*
+            one += m_parameters[0]*m_parameters[0]*
                     particles.at(i)->getPosition()[d]*
                     particles.at(i)->getPosition()[d];
         }
     }
     one *= 4.0;
-    one -= 2*((m_system->getNumberOfDimensions() - 1)*m_parameters[0] + m_parameters[2])
+    one -= 2*(m_system->getNumberOfDimensions()*m_parameters[0])
             *m_system->getNumberOfParticles();
-    return one+interaction;
+    return one;
 }
