@@ -108,7 +108,6 @@ std::vector<vector<double>> System::computematrixdistance(std::vector<class Part
     while(j < m_numberOfParticles){
         temp = 0;
         for(int i = 0; i < j; i++){
-
             for(int k=0;k<m_numberOfDimensions;k++){
                 temp+=(particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]) *
                       (particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]);

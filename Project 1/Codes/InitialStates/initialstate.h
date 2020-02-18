@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "../particle.h"
 
 class InitialState {
 public:
@@ -9,6 +10,7 @@ public:
 
 protected:
     class System* m_system = nullptr;
+    class Random* m_random = nullptr;
     std::vector<Particle*> m_particles;// = std::vector<Particle*>();
     int m_numberOfDimensions = 0;
     int m_numberOfParticles = 0;

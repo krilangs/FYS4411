@@ -16,12 +16,12 @@ using namespace std;
 int main() {
     int numberOfDimensions  = 3;
     int numberOfParticles   = 10;
-    int numberOfSteps       = (int) 1e6;
+    int numberOfSteps       = int (1e6);
     double omega            = 1.0;          // Oscillator frequency.
     double alpha            = 0.5;          // Variational parameter.
-    double stepLength       = 0.5;          // Metropolis step length.
+    double stepLength       = 1.0;          // Metropolis step length.
     double equilibration    = 0.2;          // Amount of the total steps used
-    // for equilibration.
+                                            // for equilibration.
 
     System* system = new System();
     system->setHamiltonian              (new HarmonicOscillator(system, omega));
@@ -30,6 +30,7 @@ int main() {
     system->setEquilibrationFraction    (equilibration);
     system->setStepLength               (stepLength);
 
+    cout << "Start Metropolis" << endl;
     auto start = chrono::system_clock::now();
     system->runMetropolisSteps          (numberOfSteps);
     auto end = chrono::system_clock::now();

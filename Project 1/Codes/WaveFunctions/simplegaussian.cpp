@@ -1,6 +1,7 @@
 #include "simplegaussian.h"
 #include <cmath>
 #include <cassert>
+#include <algorithm>
 #include "wavefunction.h"
 #include "../system.h"
 #include "../particle.h"
@@ -22,10 +23,13 @@ double SimpleGaussian::evaluate(std::vector<class Particle*> particles) {
      * (only) variational parameter.
      */
     double r_sqr = 0;
+    double alpha = m_parameters[0];
+    int dim = m_system->getNumberOfDimensions();
+    int N = m_system->getNumberOfParticles();
 
-    for (int i=0; i < m_system->getNumberOfParticles(); i++){
-        for (int d=0; d < m_system->getNumberOfDimensions(); d++){
-            r_sqr += particles.at(i)->getPosition()[d]*particles.at(i)->getPosition()[d]*m_parameters[0];
+    for (int i=0; i < N; i++){
+        for (int d=0; d < dim; d++){
+            r_sqr += particles.at(i)->getPosition()[d]*particles.at(i)->getPosition()[d]*alpha;
         }
     }
 
@@ -42,17 +46,19 @@ double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> part
      * Schrödinger equation to see how the two are related).
      */
     double one = 0;
+    double alpha = m_parameters[0];
+    int dim = m_system->getNumberOfDimensions();
+    int N = m_system->getNumberOfParticles();
 
     // For a single particle
-    for (int i=0; i < m_system->getNumberOfParticles(); i++){
-        for (int d=0; d < m_system->getNumberOfDimensions(); d++){
-            one += m_parameters[0]*m_parameters[0]*
-                    particles.at(i)->getPosition()[d]*
-                    particles.at(i)->getPosition()[d];
+    for (int i=0; i < N; i++){
+        for (int d=0; d < dim; d++){
+            one += alpha*alpha*
+                   particles.at(i)->getPosition()[d]*
+                   particles.at(i)->getPosition()[d];
         }
     }
     one *= 4.0;
-    one -= 2*(m_system->getNumberOfDimensions()*m_parameters[0])
-            *m_system->getNumberOfParticles();
+    one -= 2*(dim*alpha)*N;
     return one;
 }

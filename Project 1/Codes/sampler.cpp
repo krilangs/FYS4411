@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <vector>
 #include "sampler.h"
@@ -24,14 +25,24 @@ void Sampler::sample(bool acceptedStep) {
     // Make sure the sampling variable(s) are initialized at the first step.
     if (m_stepNumber == 0) {
         m_cumulativeEnergy = 0;
+        m_cumulativeEnergySquared = 0;
     }
 
     /* Here you should sample all the interesting things you want to measure.
      * Note that there are (way) more than the single one here currently.
      */
-    double localEnergy = m_system->getHamiltonian()->
-                         computeLocalEnergy(m_system->getParticles());
-    m_cumulativeEnergy  += localEnergy;
+    if (acceptedStep==true){
+        m_energy = m_system->getHamiltonian()->
+                computeLocalEnergy(m_system->getParticles());
+        m_acceptedNumber++;
+    }
+    //double localEnergy = m_system->getHamiltonian()->
+    //                     computeLocalEnergy(m_system->getParticles());
+    if (((double)getStepNumber()/getNumberOfMetropolisSteps() > 1.0 - m_system->getEquilibrationFraction())||fabs((double)getStepNumber()/getNumberOfMetropolisSteps() -( 1.0 - m_system->getEquilibrationFraction()))<1e-10){
+        m_cumulativeEnergy  += m_energy;
+        m_cumulativeEnergySquared += m_energy*m_energy;
+    }
+
     m_stepNumber++;
 }
 
@@ -58,8 +69,9 @@ void Sampler::printOutputToTerminal() {
     cout << endl;
     cout << "  -- Results -- " << endl;
     cout << " Energy : " << m_energy << endl;
-    //cout << " St. dev: " << sqrt(m_cumulativeEnergySquared - m_energy*m_energy) / sqrt(ms) << endl;
-    //cout << " Acceptance ratio: " << m_acceptedNumber/m_stepNumber << endl;
+    cout << " Variance: " << (m_cumulativeEnergySquared - m_energy*m_energy) << endl;
+    cout << " St. dev (error): " << sqrt(m_cumulativeEnergySquared - m_energy*m_energy) / sqrt(ms) << endl;
+    cout << " Acceptance ratio: " << m_acceptedNumber/m_stepNumber << endl;
     cout << endl;
 }
 
@@ -67,8 +79,8 @@ void Sampler::computeAverages() {
     /* Compute the averages of the sampled quantities. You need to think
      * thoroughly through what is written here currently; is this correct?
      */
-    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps());
-    //m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction();
+    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction());
+    m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction();
 }
 
 void Sampler::setEnergy(double energy)
@@ -86,6 +98,11 @@ int Sampler::getStepNumber() const
     return m_stepNumber;
 }
 
+int Sampler::getNumberOfMetropolisSteps() const
+{
+    return m_numberOfMetropolisSteps;
+}
+
 int Sampler::getAcceptedNumber() const
 {
     return m_acceptedNumber;
@@ -94,4 +111,24 @@ int Sampler::getAcceptedNumber() const
 void Sampler::setAcceptedNumber(int acceptedNumber)
 {
     m_acceptedNumber = acceptedNumber;
+}
+
+double Sampler::getCumulativeEnergySquared() const
+{
+    return m_cumulativeEnergySquared;
+}
+
+void Sampler::setCumulativeEnergySquared(double cumulativeEnergySquared)
+{
+    m_cumulativeEnergySquared = cumulativeEnergySquared;
+}
+
+void Sampler::updateEnergy(double dE)
+{
+    m_energy += dE;
+}
+
+double Sampler::getCumulativeEnergy() const
+{
+    return m_cumulativeEnergy;
 }

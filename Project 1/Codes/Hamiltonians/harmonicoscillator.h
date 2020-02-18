@@ -8,6 +8,7 @@ public:
     double computeLocalEnergy(std::vector<Particle*> particles);
 
 private:
-    std::vector<double> m_omega = std::vector<double>();
+    double m_omega = 0;
+    //std::vector<double> m_omega = std::vector<double>();
 };
 
