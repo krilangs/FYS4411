@@ -164,7 +164,7 @@ With the assumption of stationary densities:
 \textbf{F}&=g(\textbf{r})\nabla P\\
 \Rightarrow\quad \nabla_k^2 P&=P\nabla_k g\cdot(\nabla_k P)^2+Pg\nabla_k^2 P+g(\nabla_k P)^2
 \end{align*}
-The terms containing first and second derivatives have to cancel each other, which only happens if $g=\frac{1}{P}$. This yields the drift force for a single article $k$:
+The terms containing first and second derivatives have to cancel each other, which only happens if $g=\frac{1}{P}$. For a system with bosons the trial wave function is the probability density function and $D=1/2$ comes from the half factor in the kinetic energy (natural units). This yields the drift force for a single article $k$:
 \begin{equation}
 \label{eq:F}
 F_k(\textbf{r})=\frac{2\nabla_k\Psi_T(\textbf{r})}{\Psi_T(\textbf{r})}
@@ -445,16 +445,50 @@ This requirement is what decides if the new step is accepted or not. This is the
 The first thing in the brute force Metropolis algorithm is that we assume the transition likelihood to be symmetric, $T_{j\rightarrow i}=T_{i\rightarrow j}$. Since this is assumed to be symmetric and the acceptance probabilities are unknown, the acceptance ratio is defined as the ratio of the different probabilities. We want the highest possible number of accepted moves in number of proposed steps, which means we want to maximize 
 \[A_{j\rightarrow i}=\min(1, \frac{p_i}{p_j}).\] 
 The acceptance ratio in equation \ref{eq:detailed_balance} will have the following effect: If the ratio is equal to 1 the proposed move is stand still, if the ratio is larger than 1 the proposed move is moving towards the most probable state and if the ratio is smaller than 1 the proposed move is moving away from the most probable state. So for a random number $r\in[-0.5,0.5]$ (uniformly distributed) we will accept the move if
-\[r\leq\frac{|\Psi_T(\textbf{r}_{k+1})|^2}{|\Psi_T(\textbf{r}_k)|^2},\]
+\begin{equation}
+\label{eq:brute_accept_move}
+r\leq\frac{|\Psi_T(\textbf{r}_{k+1})|^2}{|\Psi_T(\textbf{r}_k)|^2},
+\end{equation}
 and for each MC cycle the new position is proposed \[R^{\prime}=R+r\delta\]
 where $\delta$ is tuned to give acceptance rate of $\approx50$\% of the proposed moves. Then the energy and variance is updated before going to the next MC cycle number. Since the step size $\delta$ has to be manually tuned, it makes the brute force Metropolis not the most efficient.
 
 \subsubsection{Importance Sampling}
 \label{subsubsect:Importance}
-Instead of having to manually choose the step size like in the brute force method, we want the step size to be determined by the trial wave function of the system.
+Instead of having to manually choose the step size like in the brute force method, we want the step size to be determined by the trial wave function of the system. This introduces the Importance sampling where the main goal is to increase the acceptance rate such that we don't use unnecessary time on unwanted moves. This algorithm is based on the Fokker-Planck equation (\ref{eq:Fokker-Planck}) and the Langevin equation. In section \ref{subsect:F} we derived the drift/quantum force from the Fokker-Planck equation, which we will use in the Importance sampling algorithm soon.
+
+To find the new position of the particles we use the Langevin equation
+\begin{equation}
+\label{eq:Langevin}
+\frac{\partial \textbf{r}(t)}{\partial t}=DF(\textbf{r}(t))+\eta,
+\end{equation}
+where $D$ is the diffusion term, $F$ is the drift force and $\eta$ is a uniformly distributed stochastic variable for each dimension. The Langevin equation can be solved by using Euler's method:
+\begin{equation}
+\label{eq:Langevin_Euler}
+\textbf{r}_{k+1}=\textbf{r}_k+DF(\textbf{r}_k)\Delta t+\xi\sqrt{\Delta t}
+\end{equation}
+$\xi$ is a Gaussian random variable and $\Delta t$ is the time step parameter to be chosen.
+
+The Importance sampling algorithm implies that the transition probability can't be omitted any more. The Langevin equation provides with the new trial position, while the Fokker-Planck equation provides with the new transition probability on the form of Green's function:
+\begin{equation}
+\label{eq:Green}
+G(\textbf{r}_k,\textbf{r}_{k+1},\Delta t)=\frac{1}{(4\pi D\Delta t)^{dN/2}}\exp\left(-\frac{(\textbf{r}_{k+1}-\textbf{r}_{k}-DF(\textbf{r}_k)\Delta t)^2}{4D\Delta t}\right)
+\end{equation}
+Equation \ref{eq:brute_accept_move} for the brute force Metropolis is now exchanged with the following Metropolis-Hastings algorithm condition for accepting the proposed move:
+\begin{equation}
+\label{eq:importance_accept_move}
+r\leq\frac{G(\textbf{r}_k,\textbf{r}_{k+1},\Delta t)|\Psi_T(\textbf{r}_{k+1})|^2}{G(\textbf{r}_{k+1},\textbf{r}_{k},\Delta t)|\Psi_T(\textbf{r}_k)|^2}
+\end{equation}
+Here $r$ is a Gaussian distributed random number.
 
 \subsection{Gradient Descent Method}
 \label{subsect:Gradient}
+For non-interacting bosons in a spherical trap, the optimal variational parameter was calculated analytically to be $\alpha=0.5$. This is not as simple when we introduce interaction between the bosons. So instead of having to manually find the best optimal variational parameter, which might be tough manually now, we want to find the optimal parameter in an iterative way. This can be done by introducing a gradient descent method to minimize the local energy with respect to $\alpha$. We start by choosing an initial $\alpha$ and find the next value as
+\begin{equation}
+\label{eq:grad_recursive}
+\alpha_{k+1}=\alpha_k-\lambda\nabla_{\alpha}\cdot E_L(\alpha_k),
+\end{equation}
+where $\lambda$ is some small constant factor that we choose. When $\lambda$ is small enough we should see convergence to the desired minimum of $E_L$. At this minimum the derivative is zero and the method converges. To make sure that the minimum we get the global minimum and not a local minimum, we should run the algorithm several times with different initial guesses of $\alpha$. If they converge to the same minimum, then we have a one global minimum. We also have inserted two stopping criteria to end the computation, this is to free up some unnecessary computation. The gradient method stops if the gradient is smaller than a given tolerance or if the computations reaches a given max number of iterations suited for the computation.
+
 \subsection{Blocking}
 \label{subsect:Blocking}
 To perform a statistical analysis (sect. \ref{subsect:Error_analysis}) of the Monte Carlo calculation we will use the blocking resampling method which is the better resampling method for bigger data sets. For smaller data sets we could have used resampling techniques like bootstrap or jackknife. The blocking method is well explained by \citet{flyvbjerg1989error}, and we will use a more improve blocking method developed by \citet{jonsson2018standard} in this project. 
@@ -470,10 +504,6 @@ These new vectors are less correlated since the elements are further away from e
 \sigma^2_b(\overline{\textbf{X}}_k)=\frac{\sigma_k^2}{n_k}+\frac{2}{n_k}\sum_{h=1}^{n_k-1}\left(1-\frac{h}{n_k}\right)\gamma_k(h)=\frac{\sigma_k^2}{n_k}+e_k\quad \text{if}\quad \gamma_k(0)=\sigma_k^2,
 \end{equation}
 where $\gamma_k$ is the auto-covariance of $\textbf{X}_k$ and $e_k$ is called the truncation error. \citet{flyvbjerg1989error} showed that the truncation error goes to zero as $k$ increases. After $e_k$ is small enough we should get a better estimation of the error in our results. This error should also be larger than we first calculated since it accounts for the correlations.
-
-
-
-
 
 ....................................
 \section{Methods}
