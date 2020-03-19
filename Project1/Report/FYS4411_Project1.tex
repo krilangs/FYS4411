@@ -46,7 +46,9 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 \begin{document}%\layout
 \maketitle
 \begin{abstract}
+	.................................
 	MORE TO COME!!!
+	.................................
 \end{abstract}
 
 \section{Introduction}
@@ -55,7 +57,7 @@ A more and more interesting theme in physics is to look at confined Bose systems
 
 In this project we will study two cases, one where the bosons don't interact with each other and one where they interact as if they had hard shells. For both cases we will study systems in one, two and three dimensions with a varying number of particles in the system. Since we are looking at bosons in the ground state of the system, we can derive the ground state energy analytically. Here the analytical expression is quite simple for non-interacting bosons. In the interacting case we need also a correlation wave function term which is not needed for non-interacting bosons. This will complicate the expression for the local energy. For the traps we will use spherical and elliptical harmonic traps. The calculated local energies for the systems we look at can also be calculated with the GP equation which we will use as a benchmark for our numerically calculated energies.
 
-To do the ground state energy calculation for this many-body system, for both system cases, we will use Variational Monte Carlo (VMC) methods in C++ with both a "Brute force" Metropolis-Hastings and a more improved Metropolis-Hastings algorithm, also called Importance sampling, and with a specific trial wave function. In this project we will use a single variational parameter $\alpha$. The optimal value of this variational parameter is found by implementing a gradient descent method for minimizing the ground state energy. With this optimal variational parameter we do a statistical analysis of the numerical data by using the blocking method to get a proper error analysis. Another thing we look at is the one-body density of the system where we study the correlation and importance of the Jastrow factor.
+To do the ground state energy calculation for this many-body system, for both system cases, we will use Variational Monte Carlo (VMC) methods in C++ with both a "Brute force" Metropolis and a more improved Metropolis-Hastings algorithm, also called Importance sampling, and with a specific trial wave function. In this project we will use a single variational parameter $\alpha$. The optimal value of this variational parameter is found by implementing a gradient descent method for minimizing the ground state energy. With this optimal variational parameter we do a statistical analysis of the numerical data by using the blocking method to get a proper error analysis. Another thing we look at is the one-body density of the system where we study the correlation and importance of the Jastrow factor.
 
 First we will look at the theory of the physics and the numerics we will use in this project. This includes an overview of among others the system, the analytical derivations of the local energy for both non-interacting and interacting cases, the Gross-Pitaevskii equation, one-body density and then the theory of the numerical methods mentioned above. In the methods section we explain the implementation of the numerical tools we are to use and how we will use them to do the calculations like the ground state energy in the theory section. The calculated ground state energies with statistical errors are in the end compared to the energies calculated with the GP equation in the three dimensional case. In the results section we will present and discuss all the results we get through this project. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
 
@@ -138,7 +140,7 @@ $|\psi(\textbf{r})|^2$ is the probability density function. The ground state ene
 \label{eq:variance}
 \sigma^2=\langle E_L^2\rangle-\langle E_L\rangle^2,
 \end{equation}
-and the standard deviation $\sigma$. 
+and the standard deviation $\sigma$. We want the variance to be as small as possible.
 
 To compute the local energy we will find analytical expressions and compare it with numerically calculated energies of the system. Here we expect the analytical expression to be much more CPU friendly.
 
@@ -230,7 +232,7 @@ With the Laplacian of the trial wave function in equation \ref{eq:Laplacian_WF_T
 E_L(\textbf{r})&=\frac{1}{\Psi_T(\textbf{r})}\sum_{i=1}^{N}\left(\frac{-\hbar^2}{2m}(-2\alpha d+4\alpha^2r_i^2)\Psi_T(\textbf{r})+\frac{1}{2}m\omega_{ho}^2r_i^2\Psi_T(\textbf{r})\right)\nonumber\\
 &=\sum_{i=1}^{N}\left(\frac{-\hbar^2}{2m}(-2\alpha d+4\alpha^2r_i^2)+\frac{1}{2}m\omega_{ho}^2r_i^2\right)
 \end{align*}
-Since we will use scaling and natural units, $\hbar=m=\omega_{ho}=1$, we can simplify the local energy to
+Since we will use scaling and natural units, $\hbar=m=c=1$ and use $\omega_{ho}=1$, we can simplify the local energy to
 \begin{equation}
 \label{eq:local_E_nonint}
 E_L(\textbf{r})=\alpha dN+(-2\alpha^2+\frac{1}{2})\sum_{i=1}^{N}r_i^2.
@@ -240,7 +242,7 @@ If we choose $\alpha=0.5$;
 \label{eq:local_E_stable}
 E_L(\textbf{r};\alpha=0.5)=\frac{dN}{2},
 \end{equation}
-we see that the local energy becomes stable depending on the dimensionality of the system and the number of particles. This will give the ground state energy of the system in this case.
+we see that the local energy becomes stable depending on the dimensionality of the system and the number of particles. This will give the ground state energy of the system in this case. In appendix \ref{appendix:Optimal_alpha} we derive another way to show that $\alpha=0.5$ is the optimal variational parameter in this case.
 
 \subsubsection{Local Energy Numerical}
 \label{subsubsect:EL_num}
@@ -384,12 +386,73 @@ This means that the integral over the entire volume in the direction of any part
 \label{sect:Num_algos}
 \subsection{Variational Monte Carlo}
 \label{subsect:VMC}
-\subsection{Metropolis Algorithm}
+To do the numerics in this project we will use a well known numerical method called variational Monte Carl (VMC). The good thing about this method is that we do not need to deal with differential equations which usually are difficult to handle. Instead we use statistical simulation to describe a system. This method uses random sampling of probability distributions through usually a large number of steps to achieve a solution. This type of Monte Carlo simulation needs some sampling technique combined with with an algorithm for accepting or declining a proposed move towards the most probable result. In this project we will apply a two variants of the Metropolis algorithm; a more brute force Metropolis and a improved Metropolis-Hastings/Importance Sampling algorithm. 
+
+Most quantum systems are many-body problems with a large amount of particles. For such systems, it is often too difficult to obtain exact solutions. That is why the quantum Monte Carlo method is very good for simulating such systems, since we can compute different expectation values like the ground state energy. It is this quantity we will focus on in this project for a system of N particles up till three dimensions. We will utilize the variational principle for a given trial wave function $\Psi_T$ and Hamiltonian states that the expectation value of the Hamiltonian will be an upper bound to the ground state energy $E_0$ of the system as:
+\begin{equation}
+\label{eq:variational_prin}
+E_0\leq E[H]=\frac{\int\Psi_T^*\hat{H}\Psi_Td\textbf{r}}{\int\Psi_T^*\Psi_T d\textbf{r}}
+\end{equation}
+To determine if we have located a minimum we use the variance of the expected energy as in equation \ref{eq:variance}.
+
+The MC integration is used to avoid the multi-dimensional integral of a expectation value by approximating it to a sum over the number of MC cycles:
+\begin{equation*}
+\langle x\rangle =\int xp(x)dx\approx\frac{1}{MC}\sum_{i=1}^{MC}x_ip(x_i)
+\end{equation*}
+From the law of large numbers we would then expect
+\[\lim\limits_{MC\rightarrow\infty}\frac{1}{MC}\]
+To use the MC integration we need a probability distribution, which we will choose as 
+\[p(\textbf{r})=|\Psi_T(\textbf{r})|^2.\]
+
+This VMC scheme will first initialize the trial wave function, which is dependent on one variational parameter $\alpha$ (in this project) that we want as close as possible to the optimal parameter. Then we initialize the position of the particles, the energy and variance. For a given number of MC cycles we start the MC simulation:
+\begin{enumerate}
+	\item Here we will propose a new step $R^{\prime}=R+r\delta$, where $r\in[-0.5,0.5]$ is drawn at random and $\delta$ is tuned. 
+	\item Then we calculate the trial wave function and the probability distribution function of the new position.
+	\item Use the Metropolis to test if we should accept or decline the new position.
+	\item For accepted position we update the initial position to the proposed step.
+	\item Then we update the energy and variance.
+\end{enumerate} 
+After the MC simulation we compute the average of the interesting quantities. 
+
+\subsection{Metropolis Algorithms}
 \label{subsect:Metropolis}
-\subsection{Brute Force Metropolis}
-\label{subsect:brute_Metropolis}
-\subsection{Importance Sampling}
-\label{subsect:Importance}
+The Metropolis algorithm uses the fundamentals of Markov Chains for a random walk to evolve the probability distribution function from a state $j$ to a state $i$. This transition is described by the transition probability matrix $W(j\rightarrow i)=W_{j\rightarrow i}$ and is not usually known. This transition matrix can be modeled into a multiplication of two parts; $A(j\rightarrow i)$ which is the probability of accepting a proposed move from $j$ to $i$, and $T(j\rightarrow i)$ which is the likelihood for the transition from $j$ to $i$ to happen: 
+\begin{equation}
+\label{eq:Transition_prob}
+W(j\rightarrow i)=A(j\rightarrow i)\cdot T(j\rightarrow i)
+\end{equation}
+This leads to the probability of the system to occur in the state $i$ after $n$ steps to be:
+\begin{equation*}
+\label{eq:Prob_state1}
+P_i^{(n)}=\sum_{j}\left[P_j^{(n-1)}T_{j\rightarrow i}A_{j\rightarrow i}+ P_i^{(n-1)}T_{i\rightarrow j}(1-A_{i\rightarrow j})\right]
+\end{equation*}
+The probability of making some transition must be one such that $\sum_{j}T_{j\rightarrow i}=1$, which yields
+\begin{equation*}
+\label{eq:Prob_state2}
+P_i^{(n)}=P_i^{(n-1)}+\sum_{j}\left[P_j^{(n-1)}T_{j\rightarrow i}A_{j\rightarrow i}- P_i^{(n-1)}T_{i\rightarrow j}A_{i\rightarrow j}\right]
+\end{equation*}
+For large $n$ we require that $P_j^{(n\rightarrow\infty)}=p_i$. This gives what is called the balance requirement
+\[\sum_{j}\left[p_jT_{j\rightarrow i}A_{j\rightarrow i}+ p_iT_{i\rightarrow j}(1-A_{i\rightarrow j})\right],\]
+which can be rewritten to a more sturdy requirement called the detailed balance:
+\begin{equation}
+\label{eq:detailed_balance}
+\frac{A_{j\rightarrow i}}{A_{i\rightarrow j}}=\frac{p_iT_{i\rightarrow j}}{p_jT_{j\rightarrow i}}
+\end{equation}
+This requirement is what decides if the new step is accepted or not. This is the foundation of the two Metropolis methods we are using in this project.
+
+\subsubsection{Brute Force Metropolis}
+\label{subsubsect:brute_Metropolis}
+The first thing in the brute force Metropolis algorithm is that we assume the transition likelihood to be symmetric, $T_{j\rightarrow i}=T_{i\rightarrow j}$. Since this is assumed to be symmetric and the acceptance probabilities are unknown, the acceptance ratio is defined as the ratio of the different probabilities. We want the highest possible number of accepted moves in number of proposed steps, which means we want to maximize 
+\[A_{j\rightarrow i}=\min(1, \frac{p_i}{p_j}).\] 
+The acceptance ratio in equation \ref{eq:detailed_balance} will have the following effect: If the ratio is equal to 1 the proposed move is stand still, if the ratio is larger than 1 the proposed move is moving towards the most probable state and if the ratio is smaller than 1 the proposed move is moving away from the most probable state. So for a random number $r\in[-0.5,0.5]$ (uniformly distributed) we will accept the move if
+\[r\leq\frac{|\Psi_T(\textbf{r}_{k+1})|^2}{|\Psi_T(\textbf{r}_k)|^2},\]
+and for each MC cycle the new position is proposed \[R^{\prime}=R+r\delta\]
+where $\delta$ is tuned to give acceptance rate of $\approx50$\% of the proposed moves. Then the energy and variance is updated before going to the next MC cycle number. Since the step size $\delta$ has to be manually tuned, it makes the brute force Metropolis not the most efficient.
+
+\subsubsection{Importance Sampling}
+\label{subsubsect:Importance}
+Instead of having to manually choose the step size like in the brute force method, we want the step size to be determined by the trial wave function of the system.
+
 \subsection{Gradient Descent Method}
 \label{subsect:Gradient}
 \subsection{Blocking}
@@ -406,13 +469,13 @@ These new vectors are less correlated since the elements are further away from e
 \label{eq:blocking_var}
 \sigma^2_b(\overline{\textbf{X}}_k)=\frac{\sigma_k^2}{n_k}+\frac{2}{n_k}\sum_{h=1}^{n_k-1}\left(1-\frac{h}{n_k}\right)\gamma_k(h)=\frac{\sigma_k^2}{n_k}+e_k\quad \text{if}\quad \gamma_k(0)=\sigma_k^2,
 \end{equation}
-where $\gamma_k$ is the autocovariance of $\textbf{X}_k$ and $e_k$ is called the truncation error. \citet{flyvbjerg1989error} showed that the truncation error goes to zero as $k$ increases. After $e_k$ is small enough we should get a better estimation of the error in our results. This error should also be larger than we first calculated since it accounts for the correlations.
+where $\gamma_k$ is the auto-covariance of $\textbf{X}_k$ and $e_k$ is called the truncation error. \citet{flyvbjerg1989error} showed that the truncation error goes to zero as $k$ increases. After $e_k$ is small enough we should get a better estimation of the error in our results. This error should also be larger than we first calculated since it accounts for the correlations.
 
 
 
 
 
-
+....................................
 \section{Methods}
 \label{sect:Methods}
 -Parameters used is inserted in this section\\
@@ -422,9 +485,20 @@ where $\gamma_k$ is the autocovariance of $\textbf{X}_k$ and $e_k$ is called the
 \label{sect:Results}
 \section{Conclusion}
 \label{sect:Conclusion}
+..................................
 
 \appendix
 \section*{Appendix:}
+\section{Non-Interacting Optimal Parameter}
+\label{appendix:Optimal_alpha}
+To find the optimal $\alpha$-parameter for non-interacting bosons for N particles in three dimensions with $\omega=1$ we take the partial derivative of the expected local energy in equation \ref{eq:local_E_nonint} with respect to the variational parameter:
+\[\frac{\partial \langle E_L\rangle}{\partial \alpha}=0\]
+\begin{align*}
+\frac{\partial}{\partial \alpha}\left(\alpha dN+(-2\alpha^2+\frac{1}{2})\sum_{i=1}^{N}r_i^2\right)&=\frac{\partial}{\partial \alpha}\left(\alpha dN-\alpha^2dN+\frac{dN}{4}\right)=(dN-2\alpha dN)=0\\
+\Rightarrow 2\alpha dN&=dN\\
+\Rightarrow \alpha&=0.5
+\end{align*}
+
 \section{Derivation of The Interacting Laplacian}
 \label{appendix:Laplacian}
 Derivation of the Laplacian of the interacting trial wave function for a particle $k$:
