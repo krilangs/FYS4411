@@ -1,13 +1,13 @@
-#include "simplegaussian.h"
 #include <cmath>
 #include <cassert>
 #include <algorithm>
 #include <vector>
+#include "simplegaussian.h"
 #include "wavefunction.h"
 #include "../system.h"
 #include "../particle.h"
 
-SimpleGaussian::SimpleGaussian(System* system, double alpha, double beta) :
+SimpleGaussian::SimpleGaussian(System* system, double alpha, double beta):
                                WaveFunction(system) {
     assert(alpha >= 0);
     assert(beta >= 0);
@@ -19,21 +19,14 @@ SimpleGaussian::SimpleGaussian(System* system, double alpha, double beta) :
 }
 
 double SimpleGaussian::evaluate(std::vector<class Particle*> particles) {
-    /* You need to implement a Gaussian wave function here. The positions of
-     * the particles are accessible through the particle[i].getPosition()
-     * function.
-     *
-     * For the actual expression, use exp(-alpha * r^2), with alpha being the
-     * (only) variational parameter.
-     */
+// Implement the Gaussian wave function.
     double r_sqr = 0;
-    double f = 1;
-    //double alpha = m_parameters[0];
+    double f     = 1;
     int dim = m_system->getNumberOfDimensions();
-    int N = m_system->getNumberOfParticles();
+    int N   = m_system->getNumberOfParticles();
 
     for (int j=0; j<N; j++){
-        if (N == 1) break;
+        if (N==1) {break;}
         for (int i=0; i<j; i++){
             if (m_system->getDistanceMatrixij(i,j) <= m_system->getinteractionSize()){
                 f = 0.0;
@@ -42,37 +35,32 @@ double SimpleGaussian::evaluate(std::vector<class Particle*> particles) {
             f *= 1 - m_system->getinteractionSize()/(m_system->getDistanceMatrixij(i,j));
         }
     }
-
-    for (int i=0; i < N; i++){
-        for (int d=0; d < dim; d++){
+    for (int i=0; i<N; i++){
+        for (int d=0; d<dim; d++){
             r_sqr += particles.at(i)->getPosition()[d]*particles.at(i)->getPosition()[d]*m_parameters[d];
         }
     }
-
     return exp(-r_sqr)*f;
 }
 
 double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> particles) {
-    /* All wave functions need to implement this function, so you need to
-     * find the double derivative analytically. Note that by double derivative,
-     * we actually mean the sum of the Laplacians with respect to the
-     * coordinates of each particle.
-     *
-     * This quantity is needed to compute the (local) energy (consider the
-     * Schrödinger equation to see how the two are related).
+    /* Computes the double derivative of the wave function analytically.
+     * Note that by double derivative, we actually mean the sum of
+     * the Laplacians with respect to the coordinates of each particle.
+     * This quantity is needed to compute the (local) energy.
      */
     double one = 0;
     double interaction = 0;
     double a = m_system->getinteractionSize();
-    //double alpha = m_parameters[0];
-    int dim = m_system->getNumberOfDimensions();
-    int N = m_system->getNumberOfParticles();
+    int dim  = m_system->getNumberOfDimensions();
+    int N    = m_system->getNumberOfParticles();
 
     if (a != 0.0){
-    //Interaction terms
-    for(int i=0; i<N; i++){
+    // Interaction terms
+    for (int i=0; i<N; i++){
         double r_i_square=0;
-        for(int d = 0; d < dim-1; d++){
+
+        for (int d=0; d<dim-1; d++){
             r_i_square += particles.at(i)->getPosition()[d]*
                           particles.at(i)->getPosition()[d];
         }
@@ -80,20 +68,19 @@ double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> part
         r_i_square += particles.at(i)->getPosition()[d]*
                       particles.at(i)->getPosition()[d]*m_parameters[2]/(m_parameters[0]);
 
-        double second=0;
-        double third=0;
-        double fourth=0;
-        double fifth=0;
+        double second = 0;
+        double third  = 0;
+        double fourth = 0;
+        double fifth  = 0;
         double temp;
 
-        for(int j=0; j<i; j++) {
+        for (int j=0; j<i; j++) {
             double r_ij = m_system->getDistanceMatrixij(i,j);
-
-            temp= a/((r_ij-a)*r_ij);
+            temp    = a/((r_ij-a)*r_ij);
             second += temp;
-
             double r_ir_j = 0;
-            for (int d = 0; d < dim-1; d++){
+
+            for (int d=0; d<dim-1; d++){
                 r_ir_j += particles.at(i)->getPosition()[d]*
                           particles.at(j)->getPosition()[d];
             }
@@ -101,64 +88,61 @@ double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> part
             r_ir_j += particles.at(i)->getPosition()[d]*
                       particles.at(j)->getPosition()[d]*
                       m_parameters[2]/(m_parameters[0]);
-
             fourth -= temp*temp;
-            fifth -= 4*m_parameters[0]*(r_i_square - r_ir_j)*temp/(r_ij);
+            fifth  -= 4*m_parameters[0]*(r_i_square - r_ir_j)*temp/(r_ij);
         }
-        for(int j=j+1; j<N; j++){
+        for (int j=j+1; j<N; j++){
             double r_ij = m_system->getDistanceMatrixij(i,j);
-            temp = a/((r_ij - a)*r_ij);
+            temp    = a/((r_ij - a)*r_ij);
             second += temp;
-
             double r_ir_j = 0;
-            for (int d=0; d < dim-1; d++){
+
+            for (int d=0; d<dim-1; d++){
                 r_ir_j += particles.at(i)->getPosition()[d]*
                           particles.at(j)->getPosition()[d];
             }
-            int d = dim-1;
+            int d   = dim-1;
             r_ir_j += particles.at(i)->getPosition()[d]*
                       particles.at(j)->getPosition()[d]*
                       m_parameters[2]/(m_parameters[0]);
-
             fourth -= temp*temp;
-            fifth -= 4*m_parameters[0]*(r_i_square - r_ir_j)*temp/(r_ij);
+            fifth  -= 4*m_parameters[0]*(r_i_square - r_ir_j)*temp/(r_ij);
         }
         third = second*second;
         interaction += second+third+fourth+fifth;
-    }}
+    }
+    }
 
-    // For a single particle
-    for (int i=0; i < N; i++){
-        for (int d=0; d < dim; d++){
+    // For non-interacting particles
+    for (int i=0; i<N; i++){
+        for (int d=0; d<dim; d++){
             one += m_parameters[d]*m_parameters[d]*
                    particles.at(i)->getPosition()[d]*
                    particles.at(i)->getPosition()[d];
         }
     }
     one *= 4.0;
-    one -= 2*((dim-1)*m_parameters[0] + m_parameters[2])*N;
-    return one+interaction;
+    one -= 2*((dim - 1)*m_parameters[0] + m_parameters[2])*N;
+    return one + interaction;
 }
 
 std::vector<std::vector<double>> SimpleGaussian::QuantumForce(std::vector<class Particle*> particles) {
-//Function to comput the Quantum Force for the Importance Sampling method
-    double a =m_system->getinteractionSize();
+//Function to compute the Quantum Force for the Importance sampling method.
+    double a = m_system->getinteractionSize();
     double constant;
-    double R_kj;
-    double dim = m_system->getNumberOfDimensions();
-    double N = m_system->getNumberOfParticles();
-    std::vector<std::vector<double>> QuantumForce(dim,std::vector<double>(N));
+    double r_kj;
+    int dim = m_system->getNumberOfDimensions();
+    int N   = m_system->getNumberOfParticles();
+    std::vector<std::vector<double>> QuantumForce(dim, std::vector<double>(N));
 
-    for (int d = 0; d < dim; d++){
-        for (int k = 0; k < N; k++){
-            QuantumForce[d][k] = -2 * (m_parameters[d]*particles.at(k)->getPosition()[d]);
-            for (int j = 0; j < k; j++){
-                R_kj = m_system->getDistanceMatrixij(k,j);
-                constant = 2*a/(R_kj*R_kj*(R_kj-a));
-
+    for (int d=0; d<dim; d++){
+        for (int k=0; k<N; k++){
+            QuantumForce[d][k] = -2*(m_parameters[d]*particles.at(k)->getPosition()[d]);
+            for (int j=0; j<k; j++){
+                r_kj = m_system->getDistanceMatrixij(k,j);
+                constant = 2*a/(r_kj*r_kj*(r_kj - a));
                 QuantumForce[d][k] += (particles.at(k)->getPosition()[d] - particles.at(j)->getPosition()[d])*constant;
             }
-
         }
     }
     return QuantumForce;

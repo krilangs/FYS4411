@@ -19,10 +19,6 @@ Sampler::Sampler(System* system) {
     m_stepNumber = 0;
 }
 
-void Sampler::setNumberOfMetropolisSteps(int steps) {
-    m_numberOfMetropolisSteps = steps;
-}
-
 void Sampler::sample(bool acceptedStep) {
     // Make sure the sampling variable(s) are initialized at the first step.
     if (m_stepNumber == 0) {
@@ -32,93 +28,105 @@ void Sampler::sample(bool acceptedStep) {
         m_cumulativeWFderivMultEloc = 0;
     }
 
-    /* Here you should sample all the interesting things you want to measure.
-     * Note that there are (way) more than the single one here currently.
-     */
+    // Here we sample the interesting things we want to measure.
     if (acceptedStep==true){
         m_energy = m_system->getHamiltonian()->computeLocalEnergy(m_system->getParticles());
         m_acceptedNumber++;
-
         m_WFderiv = 0;
         double beta = m_system->getWaveFunction()->getParameters()[2] / m_system->getWaveFunction()->getParameters()[0];
-        for (int i = 0; i < m_system->getNumberOfParticles(); i++){
-            for  (int d = 0; d < m_system->getNumberOfDimensions() - 1; d++){
+
+        for (int i=0; i<m_system->getNumberOfParticles(); i++){
+            for (int d=0; d<m_system->getNumberOfDimensions()-1; d++){
                 m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d];
             }
-            int d = m_system->getNumberOfDimensions() - 1;
+            int d = m_system->getNumberOfDimensions()-1;
             m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d]*beta;
         }
         m_WFderivMultELoc = m_WFderiv*m_energy;
-
     }
-    //double localEnergy = m_system->getHamiltonian()->
-    //                     computeLocalEnergy(m_system->getParticles());
 
-    if ((double(getStepNumber())/getNumberOfMetropolisSteps() > 1.0 - m_system->getEquilibrationFraction())||fabs(double(getStepNumber())/getNumberOfMetropolisSteps() -( 1.0 - m_system->getEquilibrationFraction()))<1e-10){
+    double equil = m_system->getEquilibrationFraction();
+    double frac  = double(getStepNumber())/getNumberOfMetropolisSteps();
+    // Update the sampling variables if the if-statement is true
+    if ((frac > 1.0-equil) || fabs(frac - (1.0-equil))<1e-10){
         m_cumulativeEnergy          += m_energy;
         m_cumulativeEnergySquared   += m_energy*m_energy;
         m_cumulativeWFderiv         += m_WFderiv;
         m_cumulativeWFderivMultEloc += m_WFderivMultELoc;
 
-        //m_system->oneBodyDensity();
+        //m_system->oneBodyDensity();   // Uncomment to do one-body density
     }
-    //m_cumulativeEnergy          += m_energy;
-    //m_cumulativeEnergySquared   += m_energy*m_energy;
     m_stepNumber++;
 }
 
 void Sampler::printOutputToTerminal() {
-    int     np = m_system->getNumberOfParticles();
-    int     nd = m_system->getNumberOfDimensions();
-    int     ms = m_system->getNumberOfMetropolisSteps();
-    int     p  = m_system->getWaveFunction()->getNumberOfParameters();
-    double  ef = m_system->getEquilibrationFraction();
-    double  dt = m_system->getTimeStep();
-    std::vector<double> pa = m_system->getWaveFunction()->getParameters();
+    int     N     = m_system->getNumberOfParticles();
+    int     d     = m_system->getNumberOfDimensions();
+    int     MC    = m_system->getNumberOfMetropolisSteps();
+    int     Np    = m_system->getWaveFunction()->getNumberOfParameters();
+    double  equil = m_system->getEquilibrationFraction();
+    double  dt    = m_system->getTimeStep();
+    double  var   = (m_cumulativeEnergySquared - m_energy*m_energy)/MC;
+    double  std   = sqrt(fabs(m_cumulativeEnergySquared - m_energy*m_energy))/sqrt(MC);
+    double  A     =  m_acceptedNumber/m_stepNumber;
+    std::vector<double> param = m_system->getWaveFunction()->getParameters();
     ofile.close();
 
     cout << endl;
     cout << "  -- System info -- " << endl;
-    cout << " Number of particles  : " << np << endl;
-    cout << " Number of dimensions : " << nd << endl;
-    cout << " Number of Metropolis steps run : 10^" << std::log10(ms) << endl;
-    cout << " Number of equilibration steps  : 10^" << std::log10(std::round(ms*ef)) << endl;
+    cout << " Number of particles  : " << N << endl;
+    cout << " Number of dimensions : " << d << endl;
+    cout << " Number of Metropolis steps run : 10^" << std::log10(MC) << endl;
+    cout << " Number of equilibration steps  : 10^" << std::log10(std::round(MC*equil)) << endl;
     cout << " Importance sampling time step : " << dt << endl;
     cout << endl;
     cout << "  -- Wave function parameters -- " << endl;
-    cout << " Number of parameters : " << p << endl;
-    for (int i=0; i < p; i++) {
-        cout << " Parameter " << i+1 << " : " << pa.at(i) << endl;
+    cout << " Number of parameters : " << Np << endl;
+    for (int i=0; i<Np; i++) {
+        cout << " Parameter " << i+1 << " : " << param.at(i) << endl;
     }
     cout << endl;
     cout << "  -- Results -- " << endl;
     cout << " Energy : " << m_energy << endl;
-    cout << " Variance: " << (m_cumulativeEnergySquared - m_energy*m_energy) << endl;
-    cout << " St. dev (error): " << sqrt(fabs(m_cumulativeEnergySquared - m_energy*m_energy)) / sqrt(ms) << endl;
-    cout << " Acceptance ratio: " << m_acceptedNumber/m_stepNumber << endl;
+    cout << " Variance: " << var << endl;
+    cout << " St. dev (error): " << std << endl;
+    cout << " Acceptance ratio: " << A << endl;
     cout << endl;
 }
 
 void Sampler::computeAverages() {
-    /* Compute the averages of the sampled quantities. You need to think
-     * thoroughly through what is written here currently; is this correct?
-     */
+// Compute the averages of the sampled energies.
     m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction());
     m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction();
 }
 
 void Sampler::openDataFile(std::string filename){
     if (filename != "0") ofile.open(filename);
-
 }
 
 void Sampler::writeToFile(){
     if (ofile.is_open()) ofile << m_energy << endl;
 }
 
+// Under follows all the set and get functions:
+void Sampler::setNumberOfMetropolisSteps(int steps)
+{
+    m_numberOfMetropolisSteps = steps;
+}
+
+int Sampler::getNumberOfMetropolisSteps() const
+{
+    return m_numberOfMetropolisSteps;
+}
+
 void Sampler::setEnergy(double energy)
 {
     m_energy = energy;
+}
+
+void Sampler::updateEnergy(double dE)
+{
+    m_energy += dE;
 }
 
 void Sampler::setStepNumber(int stepNumber)
@@ -131,9 +139,9 @@ int Sampler::getStepNumber() const
     return m_stepNumber;
 }
 
-int Sampler::getNumberOfMetropolisSteps() const
+void Sampler::setAcceptedNumber(int acceptedNumber)
 {
-    return m_numberOfMetropolisSteps;
+    m_acceptedNumber = acceptedNumber;
 }
 
 int Sampler::getAcceptedNumber() const
@@ -141,14 +149,9 @@ int Sampler::getAcceptedNumber() const
     return m_acceptedNumber;
 }
 
-void Sampler::setAcceptedNumber(int acceptedNumber)
+double Sampler::getCumulativeEnergy() const
 {
-    m_acceptedNumber = acceptedNumber;
-}
-
-double Sampler::getCumulativeEnergySquared() const
-{
-    return m_cumulativeEnergySquared;
+    return m_cumulativeEnergy;
 }
 
 void Sampler::setCumulativeEnergySquared(double cumulativeEnergySquared)
@@ -156,29 +159,9 @@ void Sampler::setCumulativeEnergySquared(double cumulativeEnergySquared)
     m_cumulativeEnergySquared = cumulativeEnergySquared;
 }
 
-void Sampler::updateEnergy(double dE)
+double Sampler::getCumulativeEnergySquared() const
 {
-    m_energy += dE;
-}
-
-double Sampler::getCumulativeEnergy() const
-{
-    return m_cumulativeEnergy;
-}
-
-double Sampler::getWFderivMultELoc() const
-{
-    return m_WFderivMultELoc;
-}
-
-void Sampler::setWFderivMultELoc(double WFderivMultELoc)
-{
-    m_WFderivMultELoc = WFderivMultELoc;
-}
-
-double Sampler::getCumulativeWF() const
-{
-    return m_cumulativeWF;
+    return m_cumulativeEnergySquared;
 }
 
 void Sampler::setCumulativeWF(double cumulativeWF)
@@ -186,19 +169,9 @@ void Sampler::setCumulativeWF(double cumulativeWF)
     m_cumulativeWF = cumulativeWF;
 }
 
-double Sampler::getWFderiv() const
+double Sampler::getCumulativeWF() const
 {
-    return m_WFderiv;
-}
-
-void Sampler::setWFderiv(double WFderiv)
-{
-    m_WFderiv = WFderiv;
-}
-
-double Sampler::getCumulativeWFderiv() const
-{
-    return m_cumulativeWFderiv;
+    return m_cumulativeWF;
 }
 
 void Sampler::setCumulativeWFderiv(double cumulativeWFderiv)
@@ -206,12 +179,37 @@ void Sampler::setCumulativeWFderiv(double cumulativeWFderiv)
     m_cumulativeWFderiv = cumulativeWFderiv;
 }
 
-double Sampler::getCumulativeWFderivMultEloc() const
+double Sampler::getCumulativeWFderiv() const
 {
-    return m_cumulativeWFderivMultEloc;
+    return m_cumulativeWFderiv;
 }
 
 void Sampler::setCumulativeWFderivMultEloc(double cumulativeWFderivMultEloc)
 {
     m_cumulativeWFderivMultEloc = cumulativeWFderivMultEloc;
+}
+
+double Sampler::getCumulativeWFderivMultEloc() const
+{
+    return m_cumulativeWFderivMultEloc;
+}
+
+void Sampler::setWFderiv(double WFderiv)
+{
+    m_WFderiv = WFderiv;
+}
+
+double Sampler::getWFderiv() const
+{
+    return m_WFderiv;
+}
+
+void Sampler::setWFderivMultELoc(double WFderivMultELoc)
+{
+    m_WFderivMultELoc = WFderivMultELoc;
+}
+
+double Sampler::getWFderivMultELoc() const
+{
+    return m_WFderivMultELoc;
 }

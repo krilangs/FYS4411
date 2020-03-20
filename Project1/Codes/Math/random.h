@@ -32,6 +32,6 @@ public:
     static int    nextInt(int upperLimit);
     static double nextDouble();
     static double nextGaussian(double mean, double standardDeviation);
-    static void setSeed(long seed);
+    static void   setSeed(long seed);
 };
 

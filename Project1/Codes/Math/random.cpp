@@ -7,20 +7,20 @@ using namespace std;
 long     Random::iy = 0;
 long     Random::iv[NTAB];
 long     Random::seed = -1;
-void Random::setSeed(long seed) {
+void Random::setSeed(long seed){
     Random::seed = seed;
 }
 random_device rd;
 mt19937 gen(rd());
 uniform_real_distribution<double> unif(0.0,1.0);
 
-double Random::nextGaussian(double mean, double standardDeviation) {
-    double standardNormalRandomNumber = sqrt( -2.0*log(1.0 - nextDouble()) ) * cos( 6.283185307 * nextDouble() );
+double Random::nextGaussian(double mean, double standardDeviation){
+    double standardNormalRandomNumber = sqrt(-2.0*log(1.0 - nextDouble()) )*cos(6.283185307*nextDouble());
     return standardDeviation*standardNormalRandomNumber + mean;
 }
 
-int Random::nextInt(int upperLimit) {
-    return std::floor(nextDouble() * upperLimit);
+int Random::nextInt(int upperLimit){
+    return floor(nextDouble()*upperLimit);
 }
 
 double Random::nextDouble()

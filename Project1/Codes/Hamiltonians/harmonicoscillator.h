@@ -11,7 +11,6 @@ public:
     void setOmega(const std::vector<double> &omega);
 
 private:
-    //double m_omega = 0;
     std::vector<double> m_omega = std::vector<double>();
 };
 
