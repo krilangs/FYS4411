@@ -185,13 +185,17 @@ where $V_{\text{trap}}(\textbf{r})=\frac{1}{2}m(\omega_{\perp}^2x^2+\omega_{\per
 \nabla\Psi_T&=\left(\frac{2\alpha}{\pi}\right)^{\frac{3N}{4}}\beta^{\frac{N}{4}}\prod_{i}e^{-\alpha(r_i^2)}\cdot\sum_i(-2\alpha(x_i\textbf{e}_x+y_i\textbf{e}_y+\beta z_i\textbf{e}_z))
 \end{align}
 The GP equation (\ref{eq:GP_eq}) can then be rewritten to
-\begin{align}
-\label{eq:GP_derived}
-E[\Psi_T]&=\sum_i\int(2\alpha^2+\frac{1}{2})(x_i^2+y_i^2+\beta z_i^2)|\Psi_T|^2d\textbf{r}\nonumber\\
+\begin{align*}
+E_{GP}[\Psi_T]&=\sum_i\int(2\alpha^2+\frac{1}{2})(x_i^2+y_i^2+\beta z_i^2)|\Psi_T|^2d\textbf{r}\nonumber\\
 &=(2\alpha^2+\frac{1}{2})\left(\frac{2\alpha}{\pi}\right)^{\frac{3N}{2}}\beta^{\frac{N}{2}}\frac{N}{4\alpha}(\beta+2)\left(\frac{\pi}{2\alpha}\right)^{\frac{3N}{2}}\beta^{-\frac{N}{2}}\nonumber\\
 &=\frac{N}{2}\left(\alpha+\frac{1}{4\alpha}\right)(\beta+2).
-\end{align}
-This equation (\ref{eq:GP_derived}) is the benchmark energy to be used for comparison to the computed local energy for spherical and elliptical harmonic oscillator traps in three dimensions for N particles later in the project.
+\end{align*}
+This can be generalized to work for one, two and three dimensions as
+\begin{equation}
+\label{eq:GP_derived}
+E_{GP}[\Psi_T]=\frac{N}{2}\frac{d}{3}\left(\alpha+\frac{1}{4\alpha}\right)(\beta+2)
+\end{equation}
+This equation (\ref{eq:GP_derived}) is the benchmark energy to be used for comparison to the computed local energy for spherical and elliptical harmonic oscillator traps in $d$ dimensions for N particles later in the project.
 
 \subsection{Non-Interacting Bosons}
 \label{subsect:non-int}
@@ -482,7 +486,7 @@ Here $r$ is a Gaussian distributed random number.
 
 \subsection{Gradient Descent Method}
 \label{subsect:Gradient}
-For non-interacting bosons in a spherical trap, the optimal variational parameter was calculated analytically to be $\alpha=0.5$. This is not as simple when we introduce interaction between the bosons. So instead of having to manually find the best optimal variational parameter, which might be tough manually now, we want to find the optimal parameter in an iterative way. This can be done by introducing a gradient descent method to minimize the local energy with respect to $\alpha$. We start by choosing an initial $\alpha$ and find the next value as
+For non-interacting bosons in a spherical trap, the optimal variational parameter was calculated analytically to be $\alpha=0.5$. This is not as simple when we introduce interaction between the bosons. So instead of having to manually find the best optimal variational parameter, which might be tough manually now, we want to find the optimal parameter in an iterative way. This can be done by introducing a gradient descent method to minimize the local energy with respect to $\alpha$. The chosen gradient method we will use is call the steepest descent method. We start by choosing an initial $\alpha$ and find the next value as
 \begin{equation}
 \label{eq:grad_recursive}
 \alpha_{k+1}=\alpha_k-\lambda\nabla_{\alpha}\cdot E_L(\alpha_k),
@@ -505,14 +509,66 @@ These new vectors are less correlated since the elements are further away from e
 \end{equation}
 where $\gamma_k$ is the auto-covariance of $\textbf{X}_k$ and $e_k$ is called the truncation error. \citet{flyvbjerg1989error} showed that the truncation error goes to zero as $k$ increases. After $e_k$ is small enough we should get a better estimation of the error in our results. This error should also be larger than we first calculated since it accounts for the correlations.
 
-....................................
 \section{Methods}
 \label{sect:Methods}
--Parameters used is inserted in this section\\
--Blocking: use a pre-made Python program by \citet{jonsson2018standard} which we will modify a bit after what we want\\
--One-body density: Calculate the coordinate of every particle and place them into histograms for every MC cycle. Then we normalize by the number of particles and number of MC cycles. The radius sampling is first initialized after the equilibration time of the system has passed. This is to ensure that the system properties do not depend on the initial properties. 
+The main computation of the ground state energies in this project is done in C++, while the blocking and plotting are done in Python 3.7. All the program-files are found at the GitHub repository \cite{GitHub} among with various data files and figures produced. The programming of the VMC scheme is written in a object oriented way with a class structure. The code structure is more explained in the program itself.
+
+\subsection{Coding}
+\label{subsect:Coding}
+\subsubsection{Non-Interacting Bosons}
+\label{subsubsect:Coding_non-int}
+We start by implementing the brute force Metropolis algorithm (sect. \ref{subsubsect:brute_Metropolis}) in the VMC program. With this algorithm we will first study the ground state energy of non-interacting bosons (sect. \ref{subsect:non-int}) case in a spherical harmonic potential trap. We implement both the analytical expression for the local energy and the numerical calculation of the kinetic energy. For this non-interacting case with natural units, we will use the following parameters: $\beta=\omega=1$, $a=0$, $N=1,10,100,500$ particles, $d=1,2,3$ dimensions, $10^5$ number of MC steps and a step size $h=0.001$ for the numerical kinetic energy. For the MC step length $\delta$, we have from common practice that the acceptance rate should be $A\approx50$\%, so this parameter is chosen to be $\delta_1=4.0$ for 1D, $\delta_2=2.5$ for 2D and $\delta_3=2.0$ for 3D from testing. For the simplest case with one particle in one dimension we test how the acceptance rate of the analytical expression changes when we vary the step length. With the analytical expression we test the variational parameter $\alpha\in[0.3,0.7]$ for one particle in one dimension, which we analytically found in the Theory section (\ref{sect:Theory}) to give the ground state energy for $\alpha=0.5$. Then the analytical and numerical calculations are computed and compared to each other in cases of the local energy calculated, the standard deviation error, the acceptance rate and CPU time with the variational parameter chosen as $\alpha=0.5$. We also compare the computed local energies with the energies calculated by the Gross-Pitaevskii equation \ref{eq:GP_derived}.
+ 
+\subsubsection{Importance Sampling}
+\label{subsubsect:Coding_importance}
+Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) in the VMC scheme for the non-interacting bosons case. Here we test how the acceptance rate of the analytical expression changes as we vary the time step length for one particle in one dimension. Here the time step length acts as the step length $\delta$ in the brute force method. Then we compute the analytical local energy and the numerical kinetic energy, like we did for the brute force Metropolis, with the variational parameter chosen as $\alpha=0.5$ and time step $\Delta t=0.001$. Now with these results, we compare the brute force Metropolis with the Importance sampling to see the differences in the two methods.
+
+\subsubsection{Interacting Bosons}
+\label{subsubsect:Coding_int}
+Next is to implement the elliptical potential trap and the interacting bosons (sect. \ref{subsect:interact}) into the VMC scheme. Here the system is scaled according to the theory we have already covered. In this case we will only use the brute force Metropolis on the analytical local energy expression, since this is faster. For this interacting case with scaled energies and lengths, we will use the following parameters: $\omega=1$, $\beta=\gamma=2.82843$, $a=0.0043$, $N=10,50,100$ particles in three dimensions, $10^5$ number of MC steps and the same step length $\delta_3=2.0$ like in the non-interaction case. For these three $N$ particle cases we study the local energy of the system by varying the variational parameter $\alpha\in[0.2,0.7]$. These local energies are compared to the GP calculated energies.
+
+\subsubsection{Gradient Descent \& Optimal Parameter}
+\label{subsubsect:Coding_gradient}
+Now we want to find the optimal variational parameter $\alpha$ by using a gradient descent method (sect. \ref{subsect:Gradient}). In this gradient method we will use $10^4$ MC step numbers, since this method is CPU expensive but does not need to have a such a high number of MC steps. Here we set the constant factor $\lambda=0.001$. This calculation is done for both the non-interacting and interacting cases. As the stopping criteria we choose for; $N=10$ we use 200 as the maximum iterations, $N=50$ we use 50 as the maximum iterations and $N=100$ we use 30 as the maximum iterations. The second stopping criteria is that we stop when the absolute value of the energy derivative is smaller than a tolerance of $10^{-10}$. To find the energy minimum we want, we do the calculation two times for each of the three particles cases. One time with initial guess $\alpha=0.4$ and one time with $\alpha=0.6$. Then we take the average of the two optimal parameters which we will use as our optimal parameter, and run the brute Metropolis again with this optimal parameter to find the local energy for that number of particles.
+
+\subsubsection{Statistical Analysis}
+\label{subsubsect:Coding_statistical}
+With the optimal variational parameter $\alpha$ from the gradient method, we do a statistical analysis to improve the error in the data. This is done by running the brute Metropolis with the optimal parameter, and export the local energies for each MC step to a file. Then we use a pre-made Python program by \citet{jonsson2018standard} that we will alter to suite our case. This program will than a statistical analysis of the local energies by using the blocking method to improve the error by taking into account the correlation of the data.
+
+\subsubsection{One-Body Density}
+\label{subsubsect:Coding_onebody_density}
+The last thing we do in this project is to study the one-body density of the system. We will use the optimal parameters to calculate the coordinate of every particle and place them into histograms for every MC cycle. Then we normalize by the number of particles and number of MC cycles. The radius sampling is first initialized after the equilibration time of the system has passed. This is to ensure that the system properties do not depend on the initial properties. For a spherical trap ($\beta=1$) we will compare the results of running interaction with the results of running without interaction. We also compare the run of interacting spherical trap versus elliptical trap. This is to test the importance the Jastrow factor has on the system.
+
+....................................
 \section{Results}
 \label{sect:Results}
+\subsection{Brute Force Metropolis For Non-Interacting Bosons}
+\label{subsect:Result_brute_non-int}
+-Acceptance rate as a function of varying step length for N=1,D=1, $\delta\in[0.5,5.0]$ (analytical)\\
+-Local energy as a function a varying $\alpha\in[0.3,0.7]$\\
+-Analytical vs Numerical algorithms
+\subsection{Importance Sampling For Non-Interacting Bosons}
+\label{subsect:Result_importance_non-int}
+-Acceptance rate as a function of varying time step length for N=1,D=1, $\Delta t\in[1e-7,10]$(analytical)\\
+-Analytical vs Numerical algorithms\\
+-Compare brute force vs Importance
+\subsection{Interacting Bosons}
+\label{subsect:Results_int}
+-Local energy as a function of varying $\alpha\in[0.2,0.7]$\\
+-Compare the local energies with GP equation
+\subsection{Gradient Descent \& Optimal Parameter}
+\label{subsect:Result_gradient}
+-Brute force Metropolis for analytical for both interacting and non-interacting
+-Run again with the found optimal parameter
+\subsection{Statistical Analysis}
+\label{subsect:Result_analysis}
+-Export local energies for optimal parameter to a file, then use blocking to do a statistical analysis of the gradient task
+\subsection{One-Body Density}
+\label{subsect:Result_onbody}
+-Use optimal $\alpha$ with and without the Jastrow factor:\\
+     *Test interaction vs non-int for spherical trap ($\beta=1$)
+     *Test interaction spherical vs elliptical trap
+     *Plot these tests for each N=10,50,100
 \section{Conclusion}
 \label{sect:Conclusion}
 ..................................
