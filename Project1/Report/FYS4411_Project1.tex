@@ -11,6 +11,7 @@
 \usepackage{ mathrsfs }
 \usepackage{float}
 \usepackage{subfig} 
+\usepackage{multirow}
 \usepackage[hyphens]{url}
 \usepackage[colorlinks]{hyperref}
 \hypersetup{breaklinks=true}
@@ -59,7 +60,7 @@ In this project we will study two cases, one where the bosons don't interact wit
 
 To do the ground state energy calculation for this many-body system, for both system cases, we will use Variational Monte Carlo (VMC) methods in C++ with both a "Brute force" Metropolis and a more improved Metropolis-Hastings algorithm, also called Importance sampling, and with a specific trial wave function. In this project we will use a single variational parameter $\alpha$. The optimal value of this variational parameter is found by implementing a gradient descent method for minimizing the ground state energy. With this optimal variational parameter we do a statistical analysis of the numerical data by using the blocking method to get a proper error analysis. Another thing we look at is the one-body density of the system where we study the correlation and importance of the Jastrow factor.
 
-First we will look at the theory of the physics and the numerics we will use in this project. This includes an overview of among others the system, the analytical derivations of the local energy for both non-interacting and interacting cases, the Gross-Pitaevskii equation, one-body density and then the theory of the numerical methods mentioned above. In the methods section we explain the implementation of the numerical tools we are to use and how we will use them to do the calculations like the ground state energy in the theory section. The calculated ground state energies with statistical errors are in the end compared to the energies calculated with the GP equation in the three dimensional case. In the results section we will present and discuss all the results we get through this project. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
+First we will look at the theory of the physics and the numerics we will use in this project. This includes an overview of among others the system, the analytical derivations of the local energy for both non-interacting and interacting cases, the Gross-Pitaevskii equation, one-body density and then the theory of the numerical methods mentioned above. In the methods section we explain what we do with the implementation of the numerical tools we are to use and what the parameters we are going to use are. It is here we do all the local energy sampling with the different interaction and non-interaction cases with brute force Metropolis and Importance sampling. We will also benchmark our calculated ground state energies to the energies calculated with the GP equation. In the results section we will present and discuss all the results we get through this project. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
 
 \section{Theory}
 \label{sect:Theory}
@@ -410,7 +411,7 @@ To use the MC integration we need a probability distribution, which we will choo
 
 This VMC scheme will first initialize the trial wave function, which is dependent on one variational parameter $\alpha$ (in this project) that we want as close as possible to the optimal parameter. Then we initialize the position of the particles, the energy and variance. For a given number of MC cycles we start the MC simulation:
 \begin{enumerate}
-	\item Here we will propose a new step $R^{\prime}=R+r\delta$, where $r\in[-0.5,0.5]$ is drawn at random and $\delta$ is tuned. 
+	\item Here we will propose a new step $R^{\prime}=R+r\cdot r_{\text{step}}$, where $r\in[-0.5,0.5]$ is drawn at random and $r_{\text{step}}$ is a tuned MC step length. 
 	\item Then we calculate the trial wave function and the probability distribution function of the new position.
 	\item Use the Metropolis to test if we should accept or decline the new position.
 	\item For accepted position we update the initial position to the proposed step.
@@ -453,12 +454,12 @@ The acceptance ratio in equation \ref{eq:detailed_balance} will have the followi
 \label{eq:brute_accept_move}
 r\leq\frac{|\Psi_T(\textbf{r}_{k+1})|^2}{|\Psi_T(\textbf{r}_k)|^2},
 \end{equation}
-and for each MC cycle the new position is proposed \[R^{\prime}=R+r\delta\]
-where $\delta$ is tuned to give acceptance rate of $\approx50$\% of the proposed moves. Then the energy and variance is updated before going to the next MC cycle number. Since the step size $\delta$ has to be manually tuned, it makes the brute force Metropolis not the most efficient.
+and for each MC cycle the new position is proposed \[R^{\prime}=R+r\cdot r_{\text{step}}\]
+where $r_{\text{step}}$ is tuned to give acceptance rate of $\approx50$\% of the proposed moves. Then the energy and variance is updated before going to the next MC cycle number. Since the step length $r_{\text{step}}$ has to be manually tuned, it makes the brute force Metropolis not the most efficient. We will normalize the acceptance ratio by the total number of MC steps such that $A\in[0,1]$.
 
 \subsubsection{Importance Sampling}
 \label{subsubsect:Importance}
-Instead of having to manually choose the step size like in the brute force method, we want the step size to be determined by the trial wave function of the system. This introduces the Importance sampling where the main goal is to increase the acceptance rate such that we don't use unnecessary time on unwanted moves. This algorithm is based on the Fokker-Planck equation (\ref{eq:Fokker-Planck}) and the Langevin equation. In section \ref{subsect:F} we derived the drift/quantum force from the Fokker-Planck equation, which we will use in the Importance sampling algorithm soon.
+Instead of having to manually choose the step size like in the brute force method, we want the step length to be determined by the trial wave function of the system. This introduces the Importance sampling where the main goal is to increase the acceptance rate such that we don't use unnecessary time on unwanted moves. This algorithm is based on the Fokker-Planck equation (\ref{eq:Fokker-Planck}) and the Langevin equation. In section \ref{subsect:F} we derived the drift/quantum force from the Fokker-Planck equation, which we will use in the Importance sampling algorithm soon.
 
 To find the new position of the particles we use the Langevin equation
 \begin{equation}
@@ -482,7 +483,7 @@ Equation \ref{eq:brute_accept_move} for the brute force Metropolis is now exchan
 \label{eq:importance_accept_move}
 r\leq\frac{G(\textbf{r}_k,\textbf{r}_{k+1},\Delta t)|\Psi_T(\textbf{r}_{k+1})|^2}{G(\textbf{r}_{k+1},\textbf{r}_{k},\Delta t)|\Psi_T(\textbf{r}_k)|^2}
 \end{equation}
-Here $r$ is a Gaussian distributed random number.
+Here $r$ is a Gaussian distributed random number. Also here we normalize the acceptance ratio by the total number of MC steps.
 
 \subsection{Gradient Descent Method}
 \label{subsect:Gradient}
@@ -517,15 +518,15 @@ The main computation of the ground state energies in this project is done in C++
 \label{subsect:Coding}
 \subsubsection{Non-Interacting Bosons}
 \label{subsubsect:Coding_non-int}
-We start by implementing the brute force Metropolis algorithm (sect. \ref{subsubsect:brute_Metropolis}) in the VMC program. With this algorithm we will first study the ground state energy of non-interacting bosons (sect. \ref{subsect:non-int}) case in a spherical harmonic potential trap. We implement both the analytical expression for the local energy and the numerical calculation of the kinetic energy. For this non-interacting case with natural units, we will use the following parameters: $\beta=\omega=1$, $a=0$, $N=1,10,100,500$ particles, $d=1,2,3$ dimensions, $10^5$ number of MC steps and a step size $h=0.001$ for the numerical kinetic energy. For the MC step length $\delta$, we have from common practice that the acceptance rate should be $A\approx50$\%, so this parameter is chosen to be $\delta_1=4.0$ for 1D, $\delta_2=2.5$ for 2D and $\delta_3=2.0$ for 3D from testing. For the simplest case with one particle in one dimension we test how the acceptance rate of the analytical expression changes when we vary the step length. With the analytical expression we test the variational parameter $\alpha\in[0.3,0.7]$ for one particle in one dimension, which we analytically found in the Theory section (\ref{sect:Theory}) to give the ground state energy for $\alpha=0.5$. Then the analytical and numerical calculations are computed and compared to each other in cases of the local energy calculated, the standard deviation error, the acceptance rate and CPU time with the variational parameter chosen as $\alpha=0.5$. We also compare the computed local energies with the energies calculated by the Gross-Pitaevskii equation \ref{eq:GP_derived}.
+We start by implementing the brute force Metropolis algorithm (sect. \ref{subsubsect:brute_Metropolis}) in the VMC program. With this algorithm we will first study the ground state energy of non-interacting bosons (sect. \ref{subsect:non-int}) case in a spherical harmonic potential trap. We implement both the analytical expression for the local energy and the numerical calculation of the kinetic energy. For this non-interacting case with natural units, we will use the following parameters: $\beta=\omega=1$, $a=0$, $N=1,10,100,500$ particles, $d=1,2,3$ dimensions, $10^5$ number of MC steps and a step size $h=0.001$ for the numerical kinetic energy. For the MC step length $\delta$, we have from common practice that the acceptance rate should be $A\approx50$\%, so this parameter is chosen to be $r_{\text{step},1}=4.0$ for 1D, $r_{\text{step},2}=2.5$ for 2D and $r_{\text{step},3}=2.0$ for 3D from testing. For the simplest case with one particle in one dimension we test how the acceptance rate of the analytical expression changes when we vary the step length. With the analytical expression we test the variational parameter $\alpha\in[0.3,0.7]$ for one particle in one dimension, which we analytically found in the Theory section (\ref{sect:Theory}) to give the ground state energy for $\alpha=0.5$. Then the analytical and numerical calculations are computed and compared to each other in cases of the local energy calculated, the standard deviation error, the acceptance rate and CPU time with the variational parameter chosen as $\alpha=0.5$. We also compare the computed local energies with the energies calculated by the Gross-Pitaevskii equation \ref{eq:GP_derived}.
  
 \subsubsection{Importance Sampling}
 \label{subsubsect:Coding_importance}
-Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) in the VMC scheme for the non-interacting bosons case. Here we test how the acceptance rate of the analytical expression changes as we vary the time step length for one particle in one dimension. Here the time step length acts as the step length $\delta$ in the brute force method. Then we compute the analytical local energy and the numerical kinetic energy, like we did for the brute force Metropolis, with the variational parameter chosen as $\alpha=0.5$ and time step $\Delta t=0.001$. Now with these results, we compare the brute force Metropolis with the Importance sampling to see the differences in the two methods.
+Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) in the VMC scheme for the non-interacting bosons case. Here we test how the acceptance rate of the analytical expression changes as we vary the time step length for one particle in one dimension. Here the time step length acts as the step length $r_{\text{step}}$ in the brute force method. Then we compute the analytical local energy and the numerical kinetic energy, like we did for the brute force Metropolis, with the variational parameter chosen as $\alpha=0.5$ and time step $\Delta t=0.001$. Now with these results, we compare the brute force Metropolis with the Importance sampling to see the differences in the two methods.
 
 \subsubsection{Interacting Bosons}
 \label{subsubsect:Coding_int}
-Next is to implement the elliptical potential trap and the interacting bosons (sect. \ref{subsect:interact}) into the VMC scheme. Here the system is scaled according to the theory we have already covered. In this case we will only use the brute force Metropolis on the analytical local energy expression, since this is faster. For this interacting case with scaled energies and lengths, we will use the following parameters: $\omega=1$, $\beta=\gamma=2.82843$, $a=0.0043$, $N=10,50,100$ particles in three dimensions, $10^5$ number of MC steps and the same step length $\delta_3=2.0$ like in the non-interaction case. For these three $N$ particle cases we study the local energy of the system by varying the variational parameter $\alpha\in[0.2,0.7]$. These local energies are compared to the GP calculated energies.
+Next is to implement the elliptical potential trap and the interacting bosons (sect. \ref{subsect:interact}) into the VMC scheme. Here the system is scaled according to the theory we have already covered. In this case we will only use the brute force Metropolis on the analytical local energy expression, since this is faster. For this interacting case with scaled energies and lengths, we will use the following parameters: $\omega=1$, $\beta=\gamma=2.82843$, $a=0.0043$, $N=10,50,100$ particles in three dimensions and $10^5$ number of MC steps. (To have an acceptance ratio $A\approx 50$\%, we found by testing to use the following step lengths; $r_{\text{step},10}=4.0$, $r_{\text{step},50}=1.8$ and $r_{\text{step},100}=.$ to achieve this wanted acceptance ratio/For this interacting case we choose to use $r_{\text{step}}=1.0$.) For these three $N$ particle cases we study the local energy of the system by varying the variational parameter $\alpha\in[0.2,0.7]$. These local energies are then compared to the GP calculated energies and to earlier calculated energies.
 
 \subsubsection{Gradient Descent \& Optimal Parameter}
 \label{subsubsect:Coding_gradient}
@@ -539,27 +540,194 @@ With the optimal variational parameter $\alpha$ from the gradient method, we do 
 \label{subsubsect:Coding_onebody_density}
 The last thing we do in this project is to study the one-body density of the system. We will use the optimal parameters to calculate the coordinate of every particle and place them into histograms for every MC cycle. Then we normalize by the number of particles and number of MC cycles. The radius sampling is first initialized after the equilibration time of the system has passed. This is to ensure that the system properties do not depend on the initial properties. For a spherical trap ($\beta=1$) we will compare the results of running interaction with the results of running without interaction. We also compare the run of interacting spherical trap versus elliptical trap. This is to test the importance the Jastrow factor has on the system.
 
-....................................
 \section{Results}
 \label{sect:Results}
 \subsection{Brute Force Metropolis For Non-Interacting Bosons}
 \label{subsect:Result_brute_non-int}
--Acceptance rate as a function of varying step length for N=1,D=1, $\delta\in[0.5,5.0]$ (analytical)\\
--Local energy as a function a varying $\alpha\in[0.3,0.7]$\\
--Analytical vs Numerical algorithms
+For the simpler case with non-interacting bosons in a spherical trap, the analytical expression of the local energy is quite simple when we look at the system in natural units with oscillator frequency $\omega=1$. We found analytically that we should get the ground state energy when we use $\alpha=0.5$ (sect. \ref{subsubsect:EL_analytic}). To see that the theory is reasonable, we look at Figure \ref{fig:check_alphas} in the simplest case with one particle in one dimension. There we have a plot of how the local energy and the GP calculated energy behaves when we vary the variational parameter $\alpha\in[0.3,0.7]$. Here we clearly see a minimum in the local energy of $E_L=0.5$ around $\alpha=0.5$, as we expected. We see that the two curves are not very different from each other, and at the minimum energy, they are alike. This fits well with the analytic expression we have for the local energy in equation \ref{eq:local_E_stable}. When we use $d=1$, $N=1$ and $\alpha=0.5$ in this equation we get $E_L=0.5$, which is what we see in the figure.
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.6\linewidth, height=0.4\linewidth]{Check_alphas.png}
+	\caption{Here we see how the local energy for non-interaction bosons in a spherical harmonic potential trap and the Gros-Pitaevskii calculated energy behaves as we vary the variational parameter $\alpha$ in the simplest case for one particle in one dimension. At our expected energy minimum for $\alpha=0.5$ we see that both curves are alike. \label{fig:check_alphas}}
+\end{figure} 
+
+In this same case we also look at how the acceptance rate, which is normalized by the number of MC step we use, behaves for the brute force Metropolis when we change the MC step length for the variational parameter $\alpha=0.5$. This behavior is observable in Figure \ref{fig:check_accept}. There we see that as the MC step length increases, the normalized acceptance rate of the proposed steps decline almost linearly.
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.6\linewidth, height=0.4\linewidth]{Check_accept.png}
+	\caption{Here we see how the acceptance rate (normalized by the number of MC steps) of the proposed steps with brute force Metropolis for non-interaction bosons in a spherical harmonic potential trap behaves as we vary the MC step length $r_{\text{step}}$ in the simplest case for one particle in one dimension. \label{fig:check_accept}}
+\end{figure} 
+
+Next thing we wanted to test was the performance of the analytical expression of the local energy versus the numerical calculation of the kinetic energy with numerical derivation. In Table \ref{tab:analytic_vs_numeric} we see the results of the brute force Metropolis for both analytical and numerical ground state energy for $N=1,10,100,500$ particles in one, two and three dimensions. The parameters used are seen in the Method section \ref{subsubsect:Coding_non-int}. We also compare with the Gross-Pitaevskii calculation of the ground state energy (eq. \ref{eq:GP_derived}). From the table we see that the analytical expression gives slightly more accurate results in the ground state energy than the numerical derivation does compared with the GP calculated energies. The acceptance rates are also not very good, since they are so low. We also see that the error in the numerical energies get higher and higher as the number of particles and dimensions increases, but the accuracy is still very good. The main thing to notice is that the analytical expression becomes a lot faster as the number of particles and dimensions gets higher, which is why it is very beneficial to have an analytical expression to do the calculation with. That is why we use the analytical expressions in the rest of the calculations in this project.
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		N & d & $E_L^A$ & $A^A$ & $t^A[s]$ & $E_L^N$ & $A^N$ & $t^N[s]$ & $E_L^{GP}$ \\
+		\hline \rule{0pt}{13pt}
+		 & 1 & 0.5$\pm0.0$ & 0.513 & 0.1297 & 0.5$\pm2.02\cdot10^{-10}$ & 0.513 & 0.2645 & 0.5\\
+		%\hline \rule{0pt}{13pt}
+		1 & 2 & 1.0$\pm0.0$ & 0.512 & 0.1815 & 1.0$\pm3.00\cdot10^{-10}$ & 0.512 & 0.4134 & 1.0\\
+		%\hline \rule{0pt}{13pt}
+		 & 3 & 1.5$\pm0.0$ & 0.506 & 0.2473 & 1.5$\pm4.16\cdot10^{-10}$ & 0.506 & 0.6014 & 1.5\\
+		\hline \rule{0pt}{13pt}
+		 & 1 & 5.0$\pm0.0$ & 0.512 & 0.9724 & 5.0$\pm1.09\cdot10^{-9}$ & 0.512 & 5.0552 & 5.0\\
+		%\hline \rule{0pt}{13pt}
+		10 & 2 & 10.0$\pm0.0$ & 0.514 & 2.2701 & 10.0$\pm1.81\cdot10^{-9}$ & 0.514 & 15.657 & 10.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 15.0$\pm0.0$ & 0.506 & 2.9561 & 15.0$\pm5.84\cdot10^{-9}$ & 0.506 & 31.841 & 15.0\\
+		\hline \rule{0pt}{13pt}
+		 & 1 & 50.0$\pm0.0$ & 0.514 & 13.812 & 50.0$\pm1.28\cdot10^{-8}$ & 0.514 & 1062.6 & 50.0\\
+		%\hline \rule{0pt}{13pt}
+		100 & 2 & 100.0$\pm0.0$ & 0.516 & 23.779 & 100.0$\pm 2.64\cdot10^{-8}$ & 0.516 & $>>$1000 & 100.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 150.0$\pm0.0$ & 0.507 & 34.730 & 150.0$\pm4.28\cdot10^{-8}$ & 0.507 & $>>$1000 & 150.0\\
+		\hline \rule{0pt}{13pt}
+		 & 1 & 250.0$\pm0.0$ & 0.515 & 196.04 & 250.0$\pm9.31\cdot10^{-8}$ & 0.515 & $>>$1000 & 250.0\\
+		%\hline \rule{0pt}{13pt}
+		500 & 2 & 500.0$\pm0.0$ & 0.511 & 207.24 & 500.0$\pm2.05\cdot10^{-7}$ & 0.511 & $>>$1000 & 500.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 750.0$\pm0.0$ & 0.496 & 258.81 & 750.0$\pm6.37\cdot10^{-7}$ & 0.496 & $>>$1000 & 750.0\\
+		\hline
+	\end{tabular}	
+	\caption{Table for the brute force Metropolis computation of the ground state energy ($E_L$), the acceptance rate ($A$) and the CPU time of the calculation in seconds ($t$) for 1-500 particles in 1-3 dimensions with the energy calculated from the Gross-Pitaevskii (GP) equation (\ref{eq:GP_derived}) and $\alpha=0.5$. For the analytical expression we use $i^A$, for the numerical calculation we use $i^N$ and for the GP calculated energy we use $E_L^{GP}$. See here that the analytical is slightly more accurate, and a lot faster than the numerical. \label{tab:analytic_vs_numeric}}
+\end{table}
+
+From these results we get an very small to non-existing error in the computation of the ground state energies. This is not a very realistic model to a quantum system, since there will always be some error to numerical computations. It is also not very realistic with a system like we are looking at without any interaction between the particles. But since our analytical expression for this simple non-interacting case is very simple and stable for the chosen parameters and natural units, our results are quite reasonable.
+
 \subsection{Importance Sampling For Non-Interacting Bosons}
 \label{subsect:Result_importance_non-int}
--Acceptance rate as a function of varying time step length for N=1,D=1, $\Delta t\in[1e-7,10]$(analytical)\\
--Analytical vs Numerical algorithms\\
--Compare brute force vs Importance
+The next thing was to improve the brute force Metropolis by introducing a drift/quantum force and Importance sampling. Instead of a step length we needed a time step $\Delta t$. That is why we tested the normalized acceptance rate for this improved method by varying the time step $\Delta t\in[10^{-7},10]$. In Figure \ref{fig:check_timestep} we see how the acceptance ratio just barely decreases for very small $\Delta t$'s ($<10^{-4}$). Then after around $\Delta t=0.01$, it decreases quite rapidly. For $\Delta t<=0.001$, we get very good acceptance rates $A>=0.99257$. That is why we choose $\Delta t=0.001$ to be used for Importance sampling further one. This seems like a fitting choice, since the proposed step won't move too close to or too far away from the previous position.
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.6\linewidth, height=0.4\linewidth]{Check_timestep.png}
+	\caption{Here we see how the acceptance rate (normalized by the number of MC steps) of the proposed steps with Importance sampling for non-interaction bosons in a spherical harmonic potential trap behaves as we vary the time step $\Delta t$ in the simplest case for one particle in one dimension. See that the acceptance ratio dropps rapidly after around $\Delta t=0.01$. \label{fig:check_timestep}}
+\end{figure} 
+
+Then we run the Importance sampling with $\Delta t=0.001$ where we compare the analytical to the numerical ground state energies for 1-500 particles in one, two and three dimensions. Here the drift force was computed analytically only to not slow down the program. In Table \ref{tab:imp_analytic_vs_numeric} we see the results of the same computation as in Table \ref{tab:analytic_vs_numeric} for the brute force Metropolis, but now for Importance sampling. Like for the brute force Metropolis, the analytical is supreme in CPU speed in comparison to the numerical derivation. When we compare the Importance sampling results in Table \ref{tab:imp_analytic_vs_numeric} to the results in Table \ref{tab:analytic_vs_numeric} obtained by the brute Metropolis, we see that the acceptance ratio now has increased from $\approx50$\% to $\approx0.99$\%. So the Importance sampling increases the acceptance ratio by a lot. So the Importance sampling method indeed makes better proposed steps towards the minimum local energy. The drawback with this sampling method is the speed. The CPU time of the Importance sampling becomes a lot higher than the brute Metropolis sampling. For the smaller systems with numerical derivation, we se the time with brute Metropolis is about half the time for Importance sampling. The reason for the increase in CPU time for Importance sampling, is the calculations of the drift force and Green's function. This is not the most interesting or realistic case, which is why we introduce interaction between the bosons next. From our results to save CPU time, we will use the analytical expression for the ground state energy and the brute Metropolis sampling for the rest of the project.
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		N & d & $E_L^A$ & $A^A$ & $t^A[s]$ & $E_L^N$ & $A^N$ & $t^N[s]$ & $E_L^{GP}$ \\
+		\hline \rule{0pt}{13pt}
+		& 1 & 0.5$\pm0.0$ & 0.993 & 0.4446 & 0.5$\pm2.59\cdot10^{-10}$ & 0.993 & 0.5361 & 0.5\\
+		%\hline \rule{0pt}{13pt}
+		1 & 2 & 1.0$\pm0.0$ & 0.989 & 0.6389 & 1.0$\pm5.15\cdot10^{-10}$ & 0.990 & 0.8500 & 1.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 1.5$\pm0.0$ & 0.986 & 1.1456 & 1.5$\pm5.77\cdot10^{-10}$ & 0.986 & 1.3629 & 1.5\\
+		\hline \rule{0pt}{13pt}
+		& 1 & 5.0$\pm0.0$ & 0.993 & 2.0850 & 5.0$\pm2.30\cdot10^{-9}$ & 0.993 & 10.307 & 5.0\\
+		%\hline \rule{0pt}{13pt}
+		10 & 2 & 10.0$\pm0.0$ & 0.989 & 4.4956 & 10.0$\pm2.56.\cdot10^{-9}$ & 0.989 & 29.992 & 10.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 15.0$\pm0.0$ & 0.986 & 5.9661 & 15.0$\pm5.41\cdot10^{-9}$ & 0.986 & 61.189 & 15.0\\
+		\hline \rule{0pt}{13pt}
+		& 1 & 50.0$\pm0.0$ & 0.994 & 76.677 & 50.0$\pm1.78\cdot10^{-8}$ & 0.994 & $>>$1000 & 50.0\\
+		%\hline \rule{0pt}{13pt}
+		100 & 2 & 100.0$\pm0.0$ & 0.991 & 158.25 & 100.0$\pm 3.29.\cdot10^{-8}$ & 0.991 & $>>$1000 & 100.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 150.0$\pm0.0$ & 0.988 & 255.65 & 150.0$\pm5.72\cdot10^{-8}$ & 0.988 & $>>$1000 & 150.0\\
+		\hline \rule{0pt}{13pt}
+		& 1 & 250.0$\pm0.0$ & 0.994 & 643.74 & 250.0$\pm1.03.\cdot10^{-7}$ & 0.994 & $>>$1000 & 250.0\\
+		%\hline \rule{0pt}{13pt}
+		500 & 2 & 500.0$\pm0.0$ & 0.992 & 718.86 & 500.0$\pm3.46.\cdot10^{-7}$ & 0.992 & $>>$1000 & 500.0\\
+		%\hline \rule{0pt}{13pt}
+		& 3 & 750.0$\pm0.0$ & 0.989 & 834.87 & 750.0$\pm6.85\cdot10^{-7}$ & 0.989 & $>>$1000 & 750.0\\
+		\hline
+	\end{tabular}	
+	\caption{Table for the Importance sampling of the ground state energy ($E_L$), the acceptance rate ($A$) and the CPU time of the calculation in seconds ($t$) for 1-500 particles in 1-3 dimensions with the energy calculated from the Gross-Pitaevskii (GP) equation (\ref{eq:GP_derived}) and $\alpha=0.5$. For the analytical expression we use $i^A$, for the numerical calculation we use $i^N$ and for the GP calculated energy we use $E_L^{GP}$. As for brute Metropolis sampling, the analytical calculations are much faster than the numerical derivations. \label{tab:imp_analytic_vs_numeric}}
+\end{table}
+
 \subsection{Interacting Bosons}
 \label{subsect:Results_int}
--Local energy as a function of varying $\alpha\in[0.2,0.7]$\\
--Compare the local energies with GP equation
+Then we turned to an elliptical potential trap for interacting bosons in three dimensions with $N=10,50,100$ particles. In this case we also get another trial wave function that contains the Jastrow factor with a hard-core sphere radius $a=0.0043$. With the brute Metropolis we compute the local energies and their corresponding GP calculated energies, where we vary the variation parameter $\alpha\in[0.2,0.7]$. The reason we choose this range of variational parameters values is due to the similarities between the elliptical and spherical systems These results can be found in Table \ref{tab:alpha_int} and Figure... . Also here we notice an energy minimum around $\alpha=0.5$ as in the non-interacting system. We also see that the closer we are to the optimal variational parameter, the smaller the standard deviation/error in the energies become. By looking at the computation of the local energies for non-interacting bosons in Table \ref{tab:analytic_vs_numeric} and for the interacting bosons in Table \ref{tab:alpha_int} for $N=10$ and $N=100$ particles, we see that the energies in the interacting system are higher than in the non-interacting system. So the interaction force between the bosons increase the ground state energy of the system. The energies also increases more and more in the interacting system compared to the non-interacting as the systems have a higher and higher number of particles in them. To inspect what the actual optimal variational parameter is, we will do a gradient descent method.
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		N & \multicolumn{2}{c|}{10} & \multicolumn{2}{c|}{50} & \multicolumn{2}{c|}{100}\\
+		\hline \rule{0pt}{13pt}
+		$\alpha$ & $E_L^{GP}$ & $E_L$ & $E_L^{GP}$ & $E_L$ & $E_L^{GP}$ & $E_L$ \\
+		\hline \rule{0pt}{13pt}
+		0.2 & 35.0061 & 34.9662$\pm0.0226$ & 175.031 & 172.697$\pm0.0468$ & 350.061 & .$\pm.$ \\
+		\hline \rule{0pt}{13pt}
+		0.3 & 27.3611 & 27.4067$\pm0.0117$ & 136.806 & 136.677$\pm0.0246$ & 273.611 & .$\pm.$ \\
+		\hline \rule{0pt}{13pt}
+		0.4 & 24.7457 & 24.8620$\pm0.0055$ & 123.729 & 122.551$\pm0.0143$ & 247.457 & .$\pm.$ \\
+		\hline \rule{0pt}{13pt}
+		0.5 & 24.1422 & 24.1351$\pm0.0007$ & 120.711 & 118.945$\pm0.0056$ & 241.422 & .$\pm.$ \\
+		\hline \rule{0pt}{13pt}
+		0.6 & 24.5445 & 24.6013$\pm0.0038$ & 122.723 & 119.711$\pm0.0116$ & 245.445 & .$\pm.$ \\
+		\hline \rule{0pt}{13pt}
+		0.7 & 25.5217 & 25.1066$\pm0.0082$ & 127.609 & 123.315$\pm0.0164$ & 255.217 & .$\pm.$ \\
+		\hline
+	\end{tabular}	
+	\caption{Table for the computed local energies ($E_L$) and Gross-Pitaevskii energies ($E_L^{GP}$) for interacting bosons in an elliptical potential trap in three dimensions for $N=10,50,100$ particles. As for the non-interacting system. we can see a minimum in the energies for $\alpha=0.5$ here. The closer to the optimal variational parameter we are, the smaller are the standard deviation, or error, in the energies.  \label{tab:alpha_int}}
+\end{table}
+
+....................................\\
+\textbf{Missing for N=100:\\
+-Local energy as a function of varying $\alpha\in[0.2,0.7]$}\\
+....................................
+
 \subsection{Gradient Descent \& Optimal Parameter}
 \label{subsect:Result_gradient}
--Brute force Metropolis for analytical for both interacting and non-interacting
+To find the optimal variational parameter we introduced a (steepest) gradient descent method for both non-interacting and interacting bosons systems. This method finds the energy minimum of the system. To do this we used $10^4$ number of MC steps with two separate initial guesses $\alpha=0.4, 0.6$ for each of the $N=10,50,100$ particles in three dimensions. These results are given in Table \ref{tab:gradient}. ... 
+
+With the optimal variational parameters we do the VMC computation again to get the ground state energies for those systems. These results are found in Table \ref{tab:optimal_alpha_grad}. ...
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		\text{System} & \multicolumn{3}{c|}{\text{Non-interacting}}  & \multicolumn{3}{c|}{\text{Interacting}}\\
+		\hline \rule{0pt}{13pt}
+		N & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$ & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$  \\
+		\hline \rule{0pt}{13pt}
+		10 &  &  &  &  &  &  \\
+		\hline \rule{0pt}{13pt}
+		50 &  &  &  &  &  &  \\
+		\hline \rule{0pt}{13pt}
+		100 &  &  &  &  &  &  \\
+		\hline
+	\end{tabular}	
+	\caption{Table for the (steepest) gradient descent method for finding the optimal variational parameter $\alpha_{\text{optimal}}$ for non-interacting and interacting systems in three dimensions and for $N=10,50,100$ particles. $\alpha_{\text{optimal}}$ is the average parameter of the two guesses $\alpha=0.4,0.6$ for that corresponding particle. \label{tab:gradient}}
+\end{table}
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		\text{System} & \multicolumn{2}{c|}{\text{Non-interacting}}  & \multicolumn{2}{c|}{\text{Interacting}}\\
+		\hline \rule{0pt}{13pt}
+		N &  $\alpha_{\text{optimal}}$ & $E_L$ & $\alpha_{\text{optimal}}$ & $E_L$ \\
+		\hline \rule{0pt}{13pt}
+		10 &  &  &  &  \\
+		\hline \rule{0pt}{13pt}
+		50 &  &  &  &   \\
+		\hline \rule{0pt}{13pt}
+		100 &  &  &  &  \\
+		\hline
+	\end{tabular}	
+	\caption{Table for the . \label{tab:optimal_alpha_grad}}
+\end{table}
+
+-Brute force Metropolis for analytical for both interacting and non-interacting\\
 -Run again with the found optimal parameter
+
+
+
+
+....................................
 \subsection{Statistical Analysis}
 \label{subsect:Result_analysis}
 -Export local energies for optimal parameter to a file, then use blocking to do a statistical analysis of the gradient task
@@ -571,6 +739,8 @@ The last thing we do in this project is to study the one-body density of the sys
      *Plot these tests for each N=10,50,100
 \section{Conclusion}
 \label{sect:Conclusion}
+-Improvements: parallelization\\
+-Future work: introduce machine learning/neural networks, study fermions instead of bosons
 ..................................
 
 \appendix
@@ -614,7 +784,7 @@ Inserting the gradient and Laplacian expressions for the single-particle functio
 \begin{align}
 \label{eq:H_int_deriv}
 \frac{\nabla_k^2\Psi_T(\textbf{r})}{\Psi_T(\textbf{r})}&= \left(-2\alpha(d-1+\beta)+4\alpha^2(x_k^2+y_k^2+\beta^2z_k^2)\right)\nonumber\\
-&+\left(-4\alpha(x_k\textbf{e}_x+y_k\textbf{e}_y+\beta z_k\textbf{e}_z)\right)\left(\sum_{j\neq k}\frac{a}{r_{kj}(r_{kj}-a)}\frac{\Delta\textbf{r}_{kj}}{r_{kj}}\right)\nonumber\\
+&+\left(-4\alpha(x_k\textbf{e}_x+y_k\textbf{e}_y+\beta z_k\textbf{e}_z)\right)\left(\sum_{j\neq k}\frac{a}{(r_{kj}-a)}\frac{\Delta\textbf{r}_{kj}}{r_{kj}^2}\right)\nonumber\\
 &+\sum_{j\neq k}\left(\frac{a^2-2ar_{kj}}{r_{kj}^2(r_{kj}-a)^2}+\frac{d-1}{r_{kj}^2}\frac{a}{(r_{kj}-a)}\right)\nonumber\\
 &+\left(\sum_{j\neq k}\frac{\Delta \textbf{r}_{kj}}{r_{kj}^2}\frac{a}{(r_{kj}-a)}\right)^2
 \end{align}
