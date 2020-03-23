@@ -20,7 +20,7 @@ double Random::nextGaussian(double mean, double standardDeviation){
 }
 
 int Random::nextInt(int upperLimit){
-    return floor(nextDouble()*upperLimit);
+    return int(floor(nextDouble()*upperLimit));
 }
 
 double Random::nextDouble()

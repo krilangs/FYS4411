@@ -78,7 +78,6 @@ bool System::metropolisStepImportance(){
     GreensFunction = exp(GreensFunction);
     double psi_new = m_waveFunction->evaluate(m_particles);
 
-    //Random::nextGaussian(0,1)????????
     if (Random::nextDouble() <= GreensFunction*psi_new*psi_new/(m_psiOld*m_psiOld)){//Accept new move
         m_psiOld = psi_new;
         getSampler()->setEnergy(getHamiltonian()->computeLocalEnergy(getParticles()));
@@ -181,8 +180,8 @@ vector<vector<double>> System::computematrixdistance(vector<class Particle*> par
                 temp += (particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]) *
                         (particles.at(i)->getPosition()[k] - particles.at(j)->getPosition()[k]);
             }
-            distancematrix[i][j]=sqrt(temp);
-            distancematrix[j][i]=distancematrix[i][j];
+            distancematrix[i][j] = sqrt(temp);
+            distancematrix[j][i] = distancematrix[i][j];
         }
         j ++;
     }
@@ -192,11 +191,11 @@ vector<vector<double>> System::computematrixdistance(vector<class Particle*> par
 double System::gradientDescent(double initialAlpha, string filename, int maxIterations)
 {
 //Gradient descent method to find the optimal variational parameter alpha given an initial parameter initialAlpha
-    int steepestDescentSteps = int (1e+4);
+    int steepestDescentSteps = int (1e+3);
     int iterations = 0;
     double alpha = initialAlpha;
     double beta = getWaveFunction()->getParameters()[2]/getWaveFunction()->getParameters()[0];
-    double lambda = -0.001;
+    double lambda = 0.001;
     double energyDerivative = 100;
     double cumulativeAlpha = 0;
     double percentAlphasToSave = 0.3;
@@ -204,7 +203,7 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
     ofstream myFile;
     myFile.open(filename);
 
-    while (iterations < maxIterations && fabs(energyDerivative) > tol){
+    while (iterations < maxIterations){// && fabs(energyDerivative) > tol){
         vector<double> parameters(3);
         parameters[0] = alpha;
         parameters[1] = alpha;
@@ -214,10 +213,10 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
         energyDerivative = findEnergyDerivative();
 
         // Make sure we accept enough moves
-        if (double(m_sampler->getAcceptedNumber())/steepestDescentSteps > 0.50){ //0.64 for brute MC(, 0.97 for importance)????
-            alpha += lambda*energyDerivative;
+        //if (double(m_sampler->getAcceptedNumber())/steepestDescentSteps > 0.45){ //0.64 for brute MC
+            alpha -= lambda*energyDerivative;
             iterations ++;
-        }
+        //}
 
         cout << " New alpha = "  << alpha <<  endl;
         cout << " Energy derivative = " << energyDerivative << endl;
@@ -300,6 +299,11 @@ void System::setStepLength(double stepLength)
 {
     assert(stepLength >= 0);
     m_stepLength = stepLength;
+}
+
+double System::getStepLength() const
+{
+    return m_stepLength;
 }
 
 void System::setEquilibrationFraction(double equilibrationFraction)

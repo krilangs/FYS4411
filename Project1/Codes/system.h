@@ -45,6 +45,7 @@ public:
     void printOneBodyDensity            (string filename);
 
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
+    double getStepLength()              const;
     double getTimeStep()                const;
     double getSqrtTimeStep()            const;
     double getPsiOld()                  const;

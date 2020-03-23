@@ -54,7 +54,7 @@ void Sampler::sample(bool acceptedStep) {
         m_cumulativeWFderiv         += m_WFderiv;
         m_cumulativeWFderivMultEloc += m_WFderivMultELoc;
 
-        //m_system->oneBodyDensity();   // Uncomment to do one-body density
+        m_system->oneBodyDensity();   // Uncomment to do one-body density
     }
     m_stepNumber++;
 }
@@ -66,6 +66,7 @@ void Sampler::printOutputToTerminal() {
     int     Np    = m_system->getWaveFunction()->getNumberOfParameters();
     double  equil = m_system->getEquilibrationFraction();
     double  dt    = m_system->getTimeStep();
+    double  dMC   = m_system->getStepLength();
     double  var   = (m_cumulativeEnergySquared - m_energy*m_energy)/MC;
     double  std   = sqrt(fabs(m_cumulativeEnergySquared - m_energy*m_energy))/sqrt(MC);
     double  A     =  m_acceptedNumber/m_stepNumber;
@@ -78,6 +79,7 @@ void Sampler::printOutputToTerminal() {
     cout << " Number of dimensions : " << d << endl;
     cout << " Number of Metropolis steps run : 10^" << std::log10(MC) << endl;
     cout << " Number of equilibration steps  : 10^" << std::log10(std::round(MC*equil)) << endl;
+    cout << " Monte Carlo step length : " << dMC << endl;
     cout << " Importance sampling time step : " << dt << endl;
     cout << endl;
     cout << "  -- Wave function parameters -- " << endl;
