@@ -645,7 +645,9 @@ Then we run the Importance sampling with $\Delta t=0.001$ where we compare the a
 
 \subsection{Interacting Bosons}
 \label{subsect:Results_int}
-Then we turned to an elliptical potential trap for interacting bosons in three dimensions with $N=10,50,100$ particles. In this case we also get another trial wave function that contains the Jastrow factor with a hard-core sphere radius $a=0.0043$. With the brute Metropolis we compute the local energies and their corresponding GP calculated energies, where we vary the variation parameter $\alpha\in[0.2,0.7]$. The reason we choose this range of variational parameters values is due to the similarities between the elliptical and spherical systems These results can be found in Table \ref{tab:alpha_int} and Figure... . Also here we notice an energy minimum around $\alpha=0.5$ as in the non-interacting system. We also see that the closer we are to the optimal variational parameter, the smaller the standard deviation/error in the energies become. By looking at the computation of the local energies for non-interacting bosons in Table \ref{tab:analytic_vs_numeric} and for the interacting bosons in Table \ref{tab:alpha_int} for $N=10$ and $N=100$ particles, we see that the energies in the interacting system are higher than in the non-interacting system. So the interaction force between the bosons increase the ground state energy of the system. The energies also increases more and more in the interacting system compared to the non-interacting as the systems have a higher and higher number of particles in them. To inspect what the actual optimal variational parameter is, we will do a gradient descent method.
+Then we turned to an elliptical potential trap for interacting bosons in three dimensions with $N=10,50,100$ particles. In this case we also get another trial wave function that contains the Jastrow factor with a hard-core sphere radius $a/a_{ho}=0.0043$. With the brute Metropolis we compute the local energies and their corresponding GP calculated energies, where we vary the variation parameter $\alpha\in[0.2,0.7]$. The reason we choose this range of variational parameters values is due to the similarities between the elliptical and spherical systems These results can be found in Table \ref{tab:alpha_int} and Figure...(PRESENT FIGURES OF THE E(ALPHA)) . Also here we notice an energy minimum around $\alpha=0.5$ as in the non-interacting system. We also see that the closer we are to the optimal variational parameter, the smaller the standard deviation/error in the energies become. As the number of particles increase, we see that our computed energies deviates (on average) more and more from the GP calculated energies. Our computed energies has a tendency of underestimating the ground state energies, while the non-interacting energies gave more or less the exact energies as the GP calculated energies. A reason for this is that we considered the simpler solution of the GP equation which excluded the interaction between the bosons.
+
+By looking at the computation of the local energies for non-interacting bosons in Table \ref{tab:analytic_vs_numeric} and for the interacting bosons in Table \ref{tab:alpha_int} for $N=10$ and $N=100$ particles in three dimensions, we see that the energies in the interacting system are higher than in the non-interacting system. So the interaction force between the bosons increases the ground state energy of the system. The energies also increases more and more in the interacting system compared to the non-interacting as the systems have a higher and higher number of particles in them. To inspect what the actual optimal variational parameter is, we will do a gradient descent method.
 
 \begin{table}[htbp!]
 	\centering
@@ -679,9 +681,9 @@ Then we turned to an elliptical potential trap for interacting bosons in three d
 
 \subsection{Gradient Descent \& Optimal Parameter}
 \label{subsect:Result_gradient}
-To find the optimal variational parameter we introduced a (steepest) gradient descent method for both non-interacting and interacting bosons systems. This method finds the energy minimum of the system. To do this we used $10^4$ number of MC steps with two separate initial guesses $\alpha=0.4, 0.6$ for each of the $N=10,50,100$ particles in three dimensions. These results are given in Table \ref{tab:gradient}. ... 
+To find the optimal variational parameter we introduced a (steepest) gradient descent method for both non-interacting and interacting bosons. This method finds the energy minimum of the system and for which $\alpha$ that happens. To do this we used $10^4$ number of MC steps with two separate initial guesses $\alpha=0.4, 0.6$ for each of the $N=10,50,100$ particles in three dimensions. There we see the optimal $\alpha$ we got for the two initial guesses, separately, and the mean of the two to get the optimal parameter for that set of particles. These results are given in Table \ref{tab:gradient}. For the non-interacting case, this was not very interesting since we just got the analytically calculated parameter $\alpha=0.5$ as we expected. For the interaction, we see that the optimal parameter increases a little as the number of particles increases. A thing to notice about the gradient descent method, is that it is very sensitive to where we choose our initial guesses as well as what our factor $\lambda$ is chosen to be. That is why a adaptive gradient descent methods might be better since it adapts as as it iterates.
 
-With the optimal variational parameters we do the VMC computation again to get the ground state energies for those systems. These results are found in Table \ref{tab:optimal_alpha_grad}. ...
+With the optimal variational parameters we did the VMC computation again to get the ground state energies for the same cases. These results are found in Table \ref{tab:optimal_alpha_grad}. The standard deviation/error in the ground state energies for the interacting bosons are not very large. We would expect the errors to be bigger since we have a correlation term which is not completely uncorrelated. That is why we want to do a statistical analysis to get more realistic errors.
 
 \begin{table}[htbp!]
 	\centering
@@ -692,14 +694,14 @@ With the optimal variational parameters we do the VMC computation again to get t
 		\hline \rule{0pt}{13pt}
 		N & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$ & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$  \\
 		\hline \rule{0pt}{13pt}
-		10 &  &  &  &  &  &  \\
+		10 & 0.499994 & 0.500011 & 0.5000025 & 0.503257 & 0.503264 & 0.503261 \\
 		\hline \rule{0pt}{13pt}
-		50 &  &  &  &  &  &  \\
+		50 & 0.499999 & 0.500001 & 0.5 & 0.528258 & 0.533289 & 0.530774 \\
 		\hline \rule{0pt}{13pt}
-		100 &  &  &  &  &  &  \\
+		100 & 0.5 & 0.5 & 0.5 &  &  &  \\
 		\hline
 	\end{tabular}	
-	\caption{Table for the (steepest) gradient descent method for finding the optimal variational parameter $\alpha_{\text{optimal}}$ for non-interacting and interacting systems in three dimensions and for $N=10,50,100$ particles. $\alpha_{\text{optimal}}$ is the average parameter of the two guesses $\alpha=0.4,0.6$ for that corresponding particle. \label{tab:gradient}}
+	\caption{Table for the (steepest) gradient descent method for finding the optimal variational parameter $\alpha_{\text{optimal}}$ for non-interacting and interacting systems in three dimensions and for $N=10,50,100$ particles. $\alpha_{\text{optimal}}$ is the average parameter of the two optimal $\alpha$'s we get from the two guesses $\alpha=0.4,0.6$ for that corresponding particle. See that for non-interaction we get as we expected $\alpha=0.5$. For interaction the optimal $\alpha$ increases as the number of particles increases. \label{tab:gradient}}
 \end{table}
 
 \begin{table}[htbp!]
@@ -707,36 +709,65 @@ With the optimal variational parameters we do the VMC computation again to get t
 	%\hspace{-1.0cm}
 	\begin{tabular}{ |c|c|c|c|c| }
 		\hline \rule{0pt}{13pt}
-		\text{System} & \multicolumn{2}{c|}{\text{Non-interacting}}  & \multicolumn{2}{c|}{\text{Interacting}}\\
+		\text{System} & \multicolumn{2}{c|}{\text{Non-interacting}}  & \multicolumn{2}{c|}{\text{Interacting}} \\
 		\hline \rule{0pt}{13pt}
 		N &  $\alpha_{\text{optimal}}$ & $E_L$ & $\alpha_{\text{optimal}}$ & $E_L$ \\
 		\hline \rule{0pt}{13pt}
-		10 &  &  &  &  \\
+		10 & 0.5 & 15 & 0.503261 & 24.1357$\pm5.445\cdot10^{-4}$ \\
 		\hline \rule{0pt}{13pt}
-		50 &  &  &  &   \\
+		50 & 0.5 & 75 & 0.530774 & 118.716$\pm8.103\cdot10^{-3}$ \\
 		\hline \rule{0pt}{13pt}
-		100 &  &  &  &  \\
+		100 & 0.5 & 150 &  &  \\
 		\hline
 	\end{tabular}	
-	\caption{Table for the . \label{tab:optimal_alpha_grad}}
+	\caption{Table for the brute Metropolis computation of the ground state energies with the optimal variational parameter $\alpha_{\text{optimal}}$ found through the gradient descent method for both non-interacting and interacting bosons for $N=10,50,100$ particles. \label{tab:optimal_alpha_grad}}
 \end{table}
 
--Brute force Metropolis for analytical for both interacting and non-interacting\\
--Run again with the found optimal parameter
-
-
-
-
+....................................\\
+\textbf{Missing for N=100:\\
+-Gradient descent interacting\\
+-Run again with the found optimal parameter\\}
 ....................................
+
 \subsection{Statistical Analysis}
 \label{subsect:Result_analysis}
--Export local energies for optimal parameter to a file, then use blocking to do a statistical analysis of the gradient task
+With the optimal variational parameters found for the non-interacting and interacting systems from the gradient descent method, we did a statistical analysis by using the blocking method by \citet{jonsson2018standard}. Since the non-interacting system only has $\alpha_{\text{optimal}}=0.5$ there was no need to do an improvement on the statistical error, since there is no error to improve upon. So for the interacting system we ran the VMC using the optimal $\alpha_{\text{optimal}}$'s in Table \ref{tab:optimal_alpha_grad}, where we exported all the local energies for each MC cycle to a file. Then we did the statistical analysis on these energies to get the ground state energies with the improved errors we see in Table \ref{tab:blocking_energies}. By comparing the standard deviation in the energies in Table \ref{tab:optimal_alpha_grad} and Table \ref{tab:blocking_energies}, we see that the energies after applying the blocking method has a higher standard deviation. This seems more correct, since the blocking methods has taken into consideration the correlation between the numerically produced data.
+
+\begin{table}[htbp!]
+	\centering
+	%\hspace{-1.0cm}
+	\begin{tabular}{ |c|c|c|c| }
+		\hline \rule{0pt}{13pt}
+		\text{System} &  \multicolumn{2}{c|}{\text{Interacting}} & \text{GP eq.}\\
+		\hline \rule{0pt}{13pt}
+		N & $\alpha_{\text{optimal}}$ & $E_L$ & $E_L^{GP}$\\
+		\hline \rule{0pt}{13pt}
+		10 & 0.503261 & 24.1271$\pm0.003417$ & 24.1427 \\
+		\hline \rule{0pt}{13pt}
+		50 & 0.530774 & 118.667$\pm0.10066$ & 120.926 \\
+		\hline \rule{0pt}{13pt}
+		100 &  &  &  \\
+		\hline
+	\end{tabular}	
+	\caption{Table for the ground state energies with their respective optimal variational parameter $\alpha_{\text{optimal}}$ for the $N$-particles in three dimensions after using the blocking method to improve the standard deviation in the energies. See here that the error in th energies have increased in comparison to values in Table \ref{tab:optimal_alpha_grad}. \label{tab:blocking_energies}}
+\end{table}
+
+....................................\\
+\textbf{Missing N=100:\\
+-Export local energies for optimal parameter to a file, then use blocking to do a statistical analysis of the gradient task\\}
+....................................
+
 \subsection{One-Body Density}
 \label{subsect:Result_onbody}
+Then we looked at the one-body density of the systems which was computed by sampling the radial distance for each particle, with their respective optimal variational parameter, in each of the MC cycles after calibrating into bins and normalization of probability. This distribution of particles is used to look at the effect the particle-interaction/Jastrow factor has on the system.
+
 -Use optimal $\alpha$ with and without the Jastrow factor:\\
      *Test interaction vs non-int for spherical trap ($\beta=1$)
      *Test interaction spherical vs elliptical trap
      *Plot these tests for each N=10,50,100
+     
+
+....................................
 \section{Conclusion}
 \label{sect:Conclusion}
 -Improvements: parallelization\\
@@ -786,7 +817,7 @@ Inserting the gradient and Laplacian expressions for the single-particle functio
 \frac{\nabla_k^2\Psi_T(\textbf{r})}{\Psi_T(\textbf{r})}&= \left(-2\alpha(d-1+\beta)+4\alpha^2(x_k^2+y_k^2+\beta^2z_k^2)\right)\nonumber\\
 &+\left(-4\alpha(x_k\textbf{e}_x+y_k\textbf{e}_y+\beta z_k\textbf{e}_z)\right)\left(\sum_{j\neq k}\frac{a}{(r_{kj}-a)}\frac{\Delta\textbf{r}_{kj}}{r_{kj}^2}\right)\nonumber\\
 &+\sum_{j\neq k}\left(\frac{a^2-2ar_{kj}}{r_{kj}^2(r_{kj}-a)^2}+\frac{d-1}{r_{kj}^2}\frac{a}{(r_{kj}-a)}\right)\nonumber\\
-&+\left(\sum_{j\neq k}\frac{\Delta \textbf{r}_{kj}}{r_{kj}^2}\frac{a}{(r_{kj}-a)}\right)^2
+&+\sum_{i,j\neq k}\frac{\Delta \textbf{r}_{kj}\Delta \textbf{r}_{ki}}{r_{kj}^2r_{ki}^2}\frac{a^2}{(r_{kj}-a)(r_{kji}-a)}
 \end{align}
 The local energy for the interacting bosons:
 \begin{align}
