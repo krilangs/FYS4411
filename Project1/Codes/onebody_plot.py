@@ -1,6 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
+fonts = {"font.size": 14}
+plt.rcParams.update(fonts)
 
 def read_file(filename):
     prob = []; r = []
@@ -12,31 +13,55 @@ def read_file(filename):
             prob.append(float(vals[0]))
             r.append(float(vals[1]))
 
+    for j in range(len(prob)):
+        if prob[j] > 1.0:
+            del r[j]
+    for i in prob[:]:
+        if i > 1.0:
+            prob.remove(i)
+
     return prob, r
 
-# Non-int onebody density
-prob1, r1 = read_file("density_non-int_alpha_0.500004_beta_1.000000")
-prob2, r2 = read_file("density_non-int_alpha_0.500012_beta_1.000000")
-prob3, r3 = read_file("density_non-int_alpha_0.500097_beta_1.000000")
 
-# Int (S)
-prob4, r4 = read_file("density_int_S_alpha_0.501750_beta_1.000000")
-prob5, r5 = read_file("density_int_S_alpha_0.511570_beta_1.000000")
-#prob6, r6 = read_file("")
+probEJ100, rEJ100 = read_file("density_E_J_alpha_0.522644_beta_2.828430_N_100")
+probE100, rE100 = read_file("density_E_noJ_alpha_0.522644_beta_2.828430_N_100")
 
-# Int (E)
-prob7, r7 = read_file("density_int_E_alpha_0.501750_beta_2.828430")
-#prob8, r8 = read_file("")
-#prob9, r9 = read_file("")
+probEJ50, rEJ50 = read_file("density_E_J_alpha_0.516005_beta_2.828430_N_50")
 
-#plt.plot(r1, prob1, "+", label="N=10, non-int")
-#plt.plot(r2, prob2, "+", label="N=50, non-int")
-#plt.plot(r3, prob3, "+", label="N=100, non-int")
+probE50, rE50 = read_file("density_E_noJ_alpha_0.516005_beta_2.828430_N_50")
 
-#plt.plot(r4, prob4, "+", label="N=10, int (S)")
-#plt.plot(r5, prob5, "+", label="N=50, int (S)")
-
-plt.plot(r7, prob7, "+", label="N=10, int (E)")
+probEJ10, rEJ10 = read_file("density_E_J_alpha_0.503261_beta_2.828430_N_10")
+probE10, rE10 = read_file("density_E_noJ_alpha_0.503261_beta_2.828430_N_10")
 
 
-plt.legend()
+plt.figure()
+plt.title("One-body density for N=10 with \n and without Jastrow factor")
+plt.plot(rE10, probE10, "+", label="N=10, no-Jastrow")
+plt.plot(rEJ10, probEJ10, "+", label="N=10, Jastrow")
+plt.xlabel("r/$a_{ho}$")
+plt.ylabel("Probability")
+plt.legend(loc="best")
+plt.tight_layout()
+#plt.savefig("Figures/onebody_N_10.png")
+
+plt.figure()
+plt.title("One-body density for N=50 with \n and without Jastrow factor")
+plt.plot(rE50, probE50, "+", label="N=50, no-Jastrow")
+plt.plot(rEJ50, probEJ50, "+", label="N=50, Jastrow")
+plt.xlabel("r/$a_{ho}$")
+plt.ylabel("Probability")
+plt.legend(loc="best")
+plt.tight_layout()
+#plt.savefig("Figures/onebody_N_50.png")
+
+plt.figure()
+plt.title("One-body density for N=100 with \n and without Jastrow factor")
+plt.plot(rE100, probE100, "+", label="N=100, no-Jastrow")
+plt.plot(rEJ100, probEJ100, "+", label="N=100, Jastrow")
+plt.xlabel("r/$a_{ho}$")
+plt.ylabel("Probability")
+plt.legend(loc="best")
+plt.tight_layout()
+#plt.savefig("Figures/onebody_N_100.png")
+
+plt.show()
