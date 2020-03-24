@@ -1,4 +1,4 @@
-FYS4411 - Project 1
+FYS4411 - Project 1: Variational Monte Carlo on bosonic systems in harmonic potential traps
 
 Report-folder: Contains the report files for this project.
 
