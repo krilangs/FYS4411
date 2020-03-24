@@ -10,7 +10,7 @@ using std::cout;
 using std::endl;
 
 RandomUniform::RandomUniform(System* system, int numberOfDimensions, int numberOfParticles, double timeStep,
-                             double interactionSize, int bins, double bucketSize):
+                             double interactionSize, int bins, double bucketSize, double charLength):
                              InitialState(system) {
     /* The Initial State class is in charge of everything to do with the
      * initialization of the system; this includes determining the number of
@@ -20,6 +20,7 @@ RandomUniform::RandomUniform(System* system, int numberOfDimensions, int numberO
     assert(numberOfDimensions > 0 && numberOfParticles > 0);
     m_numberOfDimensions = numberOfDimensions;
     m_numberOfParticles  = numberOfParticles;
+    m_charLength         = charLength;
     m_system->setNumberOfDimensions(numberOfDimensions);
     m_system->setNumberOfParticles(numberOfParticles);
     m_system->setTimeStep(timeStep);
@@ -37,8 +38,10 @@ void RandomUniform::setupInitialState() {
         for (int j=0; j < m_numberOfDimensions; j++) {
             /* Place the particles randomly according
              * to a uniform distribution.
+             * Multiply by the characteristic length of the box
+             * containing the particles
              */
-            position.push_back(Random::nextDouble()-0.5);
+            position.push_back((Random::nextDouble()-0.5)*m_charLength);
         }
         m_particles.push_back(new Particle());
         m_particles.at(i)->setNumberOfDimensions(m_numberOfDimensions);

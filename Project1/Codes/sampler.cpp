@@ -28,34 +28,29 @@ void Sampler::sample(bool acceptedStep) {
         m_cumulativeWFderivMultEloc = 0;
     }
 
-    // Here we sample the interesting things we want to measure.
     if (acceptedStep==true){
-        m_energy = m_system->getHamiltonian()->computeLocalEnergy(m_system->getParticles());
         m_acceptedNumber++;
-        m_WFderiv = 0;
-        double beta = m_system->getWaveFunction()->getParameters()[2] / m_system->getWaveFunction()->getParameters()[0];
+    }
+    // Here we sample the interesting things we want to measure.
+    m_energy = m_system->getHamiltonian()->computeLocalEnergy(m_system->getParticles());
+    m_WFderiv = 0;
+    double beta = m_system->getWaveFunction()->getParameters()[2] / m_system->getWaveFunction()->getParameters()[0];
 
-        for (int i=0; i<m_system->getNumberOfParticles(); i++){
-            for (int d=0; d<m_system->getNumberOfDimensions()-1; d++){
-                m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d];
-            }
-            int d = m_system->getNumberOfDimensions()-1;
-            m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d]*beta;
+    for (int i=0; i<m_system->getNumberOfParticles(); i++){
+        for (int d=0; d<m_system->getNumberOfDimensions()-1; d++){
+            m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d];
         }
-        m_WFderivMultELoc = m_WFderiv*m_energy;
+        int d = m_system->getNumberOfDimensions()-1;
+        m_WFderiv -= m_system->getParticles().at(i)->getPosition()[d]*m_system->getParticles().at(i)->getPosition()[d]*beta;
     }
+    m_WFderivMultELoc = m_WFderiv*m_energy;
+    m_cumulativeEnergy          += m_energy;
+    m_cumulativeEnergySquared   += m_energy*m_energy;
+    m_cumulativeWFderiv         += m_WFderiv;
+    m_cumulativeWFderivMultEloc += m_WFderivMultELoc;
 
-    double equil = m_system->getEquilibrationFraction();
-    double frac  = double(getStepNumber())/getNumberOfMetropolisSteps();
-    // Update the sampling variables if the if-statement is true
-    if ((frac > 1.0-equil) || fabs(frac - (1.0-equil))<1e-10){
-        m_cumulativeEnergy          += m_energy;
-        m_cumulativeEnergySquared   += m_energy*m_energy;
-        m_cumulativeWFderiv         += m_WFderiv;
-        m_cumulativeWFderivMultEloc += m_WFderivMultELoc;
+    //m_system->oneBodyDensity();   // Uncomment to do one-body density
 
-        m_system->oneBodyDensity();   // Uncomment to do one-body density
-    }
     m_stepNumber++;
 }
 
@@ -98,8 +93,10 @@ void Sampler::printOutputToTerminal() {
 
 void Sampler::computeAverages() {
 // Compute the averages of the sampled energies.
-    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction());
-    m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps()*m_system->getEquilibrationFraction();
+    m_energy = m_cumulativeEnergy / (m_system->getNumberOfMetropolisSteps());
+    m_cumulativeEnergySquared /= m_system->getNumberOfMetropolisSteps();
+    m_cumulativeWFderiv /= m_system->getNumberOfMetropolisSteps();
+    m_cumulativeWFderivMultEloc /= m_system->getNumberOfMetropolisSteps();
 }
 
 void Sampler::openDataFile(std::string filename){
@@ -148,7 +145,7 @@ void Sampler::setAcceptedNumber(int acceptedNumber)
 
 int Sampler::getAcceptedNumber() const
 {
-    return m_acceptedNumber;
+    return int(m_acceptedNumber);
 }
 
 double Sampler::getCumulativeEnergy() const

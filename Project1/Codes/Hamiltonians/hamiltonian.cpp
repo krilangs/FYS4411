@@ -10,18 +10,19 @@ Hamiltonian::Hamiltonian(System* system) {
 
 double Hamiltonian::computeNumericalDoubleDerivative (std::vector<Particle*> particles){
 //Function to compute the numerical double derivative of the wavefunction.
-    double h=0.001;
-    double h_squared=h*h;
-    double wf=0;
-    double backward=0;
-    double forward =0;
-    double present=0;
+    double h         = 0.001;
+    double h_squared = h*h;
+    double wf        = 0;
+    double backward  = 0;
+    double forward   = 0;
+    double present   = 0;
 
     int dim = m_system->getNumberOfDimensions();
     int N   = m_system->getNumberOfParticles();
     present = m_system->getWaveFunction()->evaluate(particles);
     std::vector <double> r(dim);
 
+    // Forward Euler method
     for (int j=0; j<N; j++){
         for (int d=0; d<dim; d++){
             r[d] = particles.at(j)->getPosition()[d];

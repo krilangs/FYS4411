@@ -21,30 +21,28 @@ bool System::metropolisStep() {
      * at this new position with the one at the old position).
      */
     int randparticle = Random::nextInt(m_numberOfParticles);
-
-    vector <double> r_old = m_particles.at(randparticle)->getPosition();
-    vector <double> r_new(m_numberOfDimensions);
+    Particle* randomParticle = m_particles.at(randparticle);
+    vector <double> propstep = vector<double>();
 
     // Choose new move
     for (int d=0; d<m_numberOfDimensions; d++){
-        r_new[d] = r_old[d] + m_stepLength*(Random::nextDouble()-0.5);
+        double step = m_stepLength*(Random::nextDouble()-0.5);
+        propstep.push_back(step);
+        randomParticle->adjustPosition(propstep.at(d), d);
     }
-
-    m_particles.at(randparticle)->setPosition(r_new);
-    updateDistanceMatrix(m_particles, randparticle);
 
     double psi_new = m_waveFunction->evaluate(m_particles);
 
     if (Random::nextDouble() <= psi_new*psi_new/(m_psiOld*m_psiOld)){// Accept new move, non-interaction
-    //if (Random::nextDouble()-0.5 <= psi_new*psi_new/(m_psiOld*m_psiOld)){// Accept new move, interaction
         m_psiOld = psi_new;
 
         getSampler()->setEnergy(getHamiltonian()->computeLocalEnergy(getParticles()));
         return true;
     }
     else{//Don't accept new move
-        m_particles.at(randparticle)->setPosition(r_old);
-        updateDistanceMatrix(m_particles, randparticle);
+        for (int d=0; d<m_numberOfDimensions; d++){
+            randomParticle->adjustPosition(-propstep.at(d), d);
+        }
         return false;
     }
 }
@@ -108,6 +106,10 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps) {
 
     setHistogram();
 
+    for (int i=0; i<m_numberOfMetropolisSteps*m_equilibrationFraction; i++){
+        metropolisStep();
+    }
+    // Sample after equilibrium have been reached
     for (int i=0; i<numberOfMetropolisSteps; i++) {
         bool acceptedStep = metropolisStep();               // Brute force Metropolis
         //bool acceptedStep = metropolisStepImportance();   // Importance sampling
@@ -191,7 +193,7 @@ vector<vector<double>> System::computematrixdistance(vector<class Particle*> par
 double System::gradientDescent(double initialAlpha, string filename, int maxIterations)
 {
 //Gradient descent method to find the optimal variational parameter alpha given an initial parameter initialAlpha
-    int steepestDescentSteps = int (1e+3);
+    int steepestDescentSteps = int (1e+4);
     int iterations = 0;
     double alpha = initialAlpha;
     double beta = getWaveFunction()->getParameters()[2]/getWaveFunction()->getParameters()[0];
@@ -203,7 +205,7 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
     ofstream myFile;
     myFile.open(filename);
 
-    while (iterations < maxIterations){// && fabs(energyDerivative) > tol){
+    while (iterations < maxIterations && fabs(energyDerivative) > tol){
         vector<double> parameters(3);
         parameters[0] = alpha;
         parameters[1] = alpha;
@@ -213,19 +215,18 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
         energyDerivative = findEnergyDerivative();
 
         // Make sure we accept enough moves
-        //if (double(m_sampler->getAcceptedNumber())/steepestDescentSteps > 0.45){ //0.64 for brute MC
+        if (double(m_sampler->getAcceptedNumber())/steepestDescentSteps > 0.5){ //0.64 for brute MC
             alpha -= lambda*energyDerivative;
             iterations ++;
-        //}
+            // Write alpha, mean local energy and st. dev to file
+            myFile << alpha << "   "  << getSampler()->getEnergy() << "  " <<
+                      sqrt(fabs(getSampler()->getCumulativeEnergySquared() - getSampler()->getEnergy()*getSampler()->getEnergy()))
+                      /getNumberOfMetropolisSteps() << endl;
+        }
 
         cout << " New alpha = "  << alpha <<  endl;
         cout << " Energy derivative = " << energyDerivative << endl;
         cout << " Iterations = " << iterations << endl;
-
-        // Write alpha, mean local energy and st. dev to file
-        myFile << alpha << "   "  << getSampler()->getEnergy() << "  " <<
-                  sqrt(fabs(getSampler()->getCumulativeEnergySquared() - getSampler()->getEnergy()*getSampler()->getEnergy()))
-                  /getNumberOfMetropolisSteps() << endl;
 
         if (double (iterations)/maxIterations > 1-percentAlphasToSave){
             cumulativeAlpha += alpha;
