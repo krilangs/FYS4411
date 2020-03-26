@@ -193,11 +193,14 @@ vector<vector<double>> System::computematrixdistance(vector<class Particle*> par
 double System::gradientDescent(double initialAlpha, string filename, int maxIterations)
 {
 //Gradient descent method to find the optimal variational parameter alpha given an initial parameter initialAlpha
-    int steepestDescentSteps = int (1e+4);
+    int steepestDescentSteps = int (1e+3);
     int iterations = 0;
+    double E_old = 0;
+    double E_new = 0;
+    double E_temp;
     double alpha = initialAlpha;
     double beta = getWaveFunction()->getParameters()[2]/getWaveFunction()->getParameters()[0];
-    double lambda = 0.001;
+    double lambda = 0.01;
     double energyDerivative = 100;
     double cumulativeAlpha = 0;
     double percentAlphasToSave = 0.3;
@@ -214,23 +217,32 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
         runMetropolisSteps(steepestDescentSteps);
         energyDerivative = findEnergyDerivative();
 
+        E_temp = E_old;
+        E_old = getSampler()->getEnergy();
+
         // Make sure we accept enough moves
-        if (double(m_sampler->getAcceptedNumber())/steepestDescentSteps > 0.5){ //0.64 for brute MC
+        if (E_new < 1.5*E_temp){
             alpha -= lambda*energyDerivative;
             iterations ++;
-            // Write alpha, mean local energy and st. dev to file
+            E_new = E_old;
+
+            // Write alpha, mean local energy and st. dev (error) to file
             myFile << alpha << "   "  << getSampler()->getEnergy() << "  " <<
                       sqrt(fabs(getSampler()->getCumulativeEnergySquared() - getSampler()->getEnergy()*getSampler()->getEnergy()))
                       /getNumberOfMetropolisSteps() << endl;
-        }
 
+            if (double (iterations)/maxIterations > 1-percentAlphasToSave){
+                cumulativeAlpha += alpha;
+            }
+        }
+        else{
+            E_new = E_temp;
+        }
         cout << " New alpha = "  << alpha <<  endl;
         cout << " Energy derivative = " << energyDerivative << endl;
         cout << " Iterations = " << iterations << endl;
 
-        if (double (iterations)/maxIterations > 1-percentAlphasToSave){
-            cumulativeAlpha += alpha;
-        }
+
     }
     myFile.close();
 
@@ -240,11 +252,11 @@ double System::gradientDescent(double initialAlpha, string filename, int maxIter
 
 double System::findEnergyDerivative()
 {
-    double meanEnergy      = getSampler()->getCumulativeEnergy()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
-    double meanWFderiv     = getSampler()->getCumulativeWFderiv()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
-    double meanWFderivEloc = getSampler()->getCumulativeWFderivMultEloc()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
+    double meanEnergy      = getSampler()->getCumulativeEnergy()/(m_numberOfMetropolisSteps);//*getEquilibrationFraction());
+    double meanWFderiv     = getSampler()->getCumulativeWFderiv()/(m_numberOfMetropolisSteps);//*getEquilibrationFraction());
+    double meanWFderivEloc = getSampler()->getCumulativeWFderivMultEloc()/(m_numberOfMetropolisSteps);//*getEquilibrationFraction());
 
-    return 2*(meanWFderivEloc - meanEnergy*meanWFderiv);
+    return 2*(meanWFderivEloc - meanEnergy*meanWFderiv)/getEquilibrationFraction();
 }
 
 void System::oneBodyDensity()

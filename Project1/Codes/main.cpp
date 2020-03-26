@@ -31,15 +31,15 @@ int main() {
        - Uncomment m_system->oneBodyDensity(), and below here to run one-body density.
      */
     int numberOfDimensions  = 3;
-    int numberOfParticles   = 10;
+    int numberOfParticles   = 100;
     int numberOfSteps       = int (1e5);    // Number of MC steps
     double omega            = 1.0;          // Oscillator frequency
-    double alpha            = 0.522644;     // Variational parameter
+    double alpha            = 0.512658;     // Variational parameter
     double beta             = 2.82843;      // 2.82843 for elliptical trap, 1.0 for spherical trap
     double omega_z          = beta;         // Frequency i z-direction
     double stepLength       = 1.5;          // Metropolis step length.
     double timeStep         = 0.001;        // Importance sampling time step
-    double equilibration    = 0.2;          // Amount of the total steps used for equilibrium
+    double equilibration    = 0.1;          // Amount of the total steps used for equilibrium
     double interactionSize  = 0.0043;       // 0.0043 for interaction, 0.0 for non-interaction
     double charLength       = 2.5;          // Characteristic length of box: 1.0 (a_0) for non-interaction, 2.5 for interaction
 
@@ -67,8 +67,8 @@ int main() {
 
     // Gradient descent method to find energy minimum, uncomment below to run:
 /*
-    int maxIterations = 200;                 // For N=10: =200, N=50: =50, N=100: =30
-    double initialAlpha = 0.40;             // Initial guess, used 0.4 and 0.6
+    int maxIterations = 50;                 // For N=10: =200, N=50: =70, N=100: =50
+    double initialAlpha = 0.55;             // Initial guess, used 0.45 and 0.55
     string minFilename = "Data/find_min_int_" + to_string(initialAlpha) +"_N_" + to_string(numberOfParticles) + "_doublecheck.dat";
     alpha = system->gradientDescent(initialAlpha, minFilename, maxIterations);
     cout << "Optimal alpha found by steepest descent: " << alpha << endl;
