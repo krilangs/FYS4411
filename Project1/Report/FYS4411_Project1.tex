@@ -496,7 +496,7 @@ Next is to implement the elliptical potential trap and the interacting bosons (s
 
 \subsubsection{Gradient Descent \& Optimal Parameter}
 \label{subsubsect:Coding_gradient}
-Now we want to find the optimal variational parameter $\alpha$ by using a gradient descent method (sect. \ref{subsect:Gradient}). In this gradient method we will use $10^4$ MC step numbers, since this method is CPU expensive but does not need to have a such a high number of MC steps. Here we set the constant factor $\lambda=0.001$. This calculation is done for both the non-interacting and interacting cases. As the stopping criteria we choose for; $N=10$ we use 200 as the maximum iterations, $N=50$ we use 50 as the maximum iterations and $N=100$ we use 30 as the maximum iterations. The second stopping criteria is that we stop when the absolute value of the energy derivative is smaller than a tolerance of $10^{-10}$. To find the energy minimum we want, we do the calculation two times for each of the three particles cases. One time with initial guess $\alpha=0.4$ and one time with $\alpha=0.6$. Then we take the average of the two optimal parameters which we will use as our optimal parameter, and run the brute Metropolis again with this optimal parameter to find the local energy for that number of particles.
+Now we want to find the optimal variational parameter $\alpha$ by using a gradient descent method (sect. \ref{subsect:Gradient}). In this gradient method we will use $10^3$ MC step numbers, since this method is CPU expensive but does not need to have a such a high number of MC steps. Here we set the constant factor $\lambda=0.01$. This calculation is done for both the non-interacting and interacting cases. As the stopping criteria we choose for; $N=10$ we use 200 as the maximum iterations, $N=50$ we use 70 as the maximum iterations and for $N=100$ we use 50 as the maximum iterations. The second stopping criteria is that we stop when the absolute value of the energy derivative is smaller than a tolerance of $10^{-10}$. To find the energy minimum we want, we do the calculation two times for each of the three particles cases. One time with initial guess $\alpha=0.45$ and one time with $\alpha=0.55$, since we expect the energy minimum to be around $\alpha=0.5$. Then we take the average of the two optimal parameters for the initial guesses which we will use as our optimal parameter. With this optimal parameter we run the Metropolis algorithm again to find the ground state energy for that number of particles.
 
 \subsubsection{Statistical Analysis}
 \label{subsubsect:Coding_statistical}
@@ -647,7 +647,7 @@ By looking at the computation of the local energies for non-interacting bosons i
 
 \subsection{Gradient Descent \& Optimal Parameter}
 \label{subsect:Result_gradient}
-To find the optimal variational parameter we introduced a (steepest) gradient descent method for both non-interacting and interacting bosons. This method finds the energy minimum of the system and for which $\alpha$ that happens. To do this we used $10^4$ number of MC steps with two separate initial guesses $\alpha=0.4, 0.6$ for each of the $N=10,50,100$ particles in three dimensions. These results are given in Table \ref{tab:gradient}. There we see the optimal $\alpha$ we got for the two initial guesses, separately, and the mean of the two to get the optimal parameter for that set of particles. For the non-interacting case, this was not very interesting to look at, since we just got the analytically calculated parameter $\alpha=0.5$ as we expected. For the interaction, we see that the optimal parameter increases a little as the number of particles increase. A thing to notice about the gradient descent method, is that it is very sensitive to where we choose our initial guesses as well as what our factor $\lambda$ is chosen to be. That is why a adaptive gradient descent method might be better since it adapts the constant factor as the method iterates.
+To find the optimal variational parameter we introduced a (steepest) gradient descent method for both non-interacting and interacting bosons. This method finds the energy minimum of the system and for which $\alpha$ that happens. To do this we used $10^3$ number of MC steps with two separate initial guesses $\alpha=0.45, 0.55$ for each of the $N=10,50,100$ particles in three dimensions. These results are given in Table \ref{tab:gradient}. There we see the optimal $\alpha$ we got for the two initial guesses, separately, and the mean of the two to get the optimal parameter for that set of particles. For the non-interacting case, this was not very interesting to look at, since we just got the analytically calculated parameter $\alpha=0.5$ as we expected. For the interaction, we see that the optimal parameter increases a little as the number of particles increase. A thing to notice about the gradient descent method, is that it is very sensitive to where we choose our initial guesses as well as what our factor $\lambda$ is chosen to be. That is why a adaptive gradient descent method might be better since it adapts the constant factor as the method iterates.
 
 With the optimal variational parameters we did the VMC computation again to get the ground state energies for the same cases. These results are found in Table \ref{tab:optimal_alpha_grad}. The standard deviation/error in the ground state energies for the interacting bosons are not very large. We would actually expect the errors to be bigger since the numerical data are not fully uncorrelated. That is why we want to do a statistical analysis to get more realistic errors.
 
@@ -658,16 +658,16 @@ With the optimal variational parameters we did the VMC computation again to get 
 		\hline \rule{0pt}{13pt}
 		\text{System} & \multicolumn{3}{c|}{\text{Non-interacting}}  & \multicolumn{3}{c|}{\text{Interacting}}\\
 		\hline \rule{0pt}{13pt}
-		N & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$ & $\alpha_{\text{guess, 0.4}}$ & $\alpha_{\text{guess, 0.6}}$ & $\alpha_{\text{optimal}}$  \\
+		N & $\alpha_{\text{guess, 0.45}}$ & $\alpha_{\text{guess, 0.55}}$ & $\alpha_{\text{optimal}}$ & $\alpha_{\text{guess, 0.45}}$ & $\alpha_{\text{guess, 0.55}}$ & $\alpha_{\text{optimal}}$  \\
 		\hline \rule{0pt}{13pt}
-		10 & 0.5 & 0.5 & 0.5 & 0.503257 & 0.503264 & 0.503261 \\
+		10 & 0.5 & 0.5 & 0.5 & 0.495842 & 0.519972 & 0.507907 \\
 		\hline \rule{0pt}{13pt}
-		50 & 0.5 & 0.5 & 0.5 & 0.513245 & 0.518765 & 0.516005 \\
+		50 & 0.5 & 0.5 & 0.5 & 0.503473 & 0.518021 & 0.510747 \\
 		\hline \rule{0pt}{13pt}
-		100 & 0.5 & 0.5 & 0.5 & 0.519655 & 0.525632 & 0.522644 \\
+		100 & 0.5 & 0.5 & 0.5 & 0.505201 & 0.520115 & 0.512658 \\
 		\hline
 	\end{tabular}	
-	\caption{Table for the (steepest) gradient descent method for finding the optimal variational parameter $\alpha_{\text{optimal}}$ for non-interacting and interacting systems in three dimensions and for $N=10,50,100$ particles. $\alpha_{\text{optimal}}$ is the average parameter of the two optimal $\alpha$'s we get from the two guesses $\alpha=0.4,0.6$ for that corresponding particle. See that for non-interaction we get as we expected $\alpha=0.5$. For interaction the optimal $\alpha$ increases as the number of particles increases, but is still close to the optimal $\alpha$ for the non-interacting case. \label{tab:gradient}}
+	\caption{Table for the (steepest) gradient descent method for finding the optimal variational parameter $\alpha_{\text{optimal}}$ for non-interacting and interacting systems in three dimensions and for $N=10,50,100$ particles. $\alpha_{\text{optimal}}$ is the average parameter of the two optimal $\alpha$'s we get from the two guesses $\alpha=0.45,0.55$ for that corresponding particle. See that for non-interaction we get as we expected $\alpha=0.5$. For interaction the optimal $\alpha$ increases as the number of particles increases, but is still close to the optimal $\alpha$ for the non-interacting case. \label{tab:gradient}}
 \end{table}
 
 \begin{table}[htbp!]
@@ -679,11 +679,11 @@ With the optimal variational parameters we did the VMC computation again to get 
 		\hline \rule{0pt}{13pt}
 		N &  $\alpha_{\text{optimal}}$ & $E_L[\hbar\omega_{ho}]$ & $\alpha_{\text{optimal}}$ & $E_L[\hbar\omega_{ho}]$ \\
 		\hline \rule{0pt}{13pt}
-		10 & 0.5 & 15 & 0.503261 & 24.2377$\pm2.176\cdot10^{-4}$ \\
+		10 & 0.5 & 15 & 0.507907 & 24.242$\pm3.226\cdot10^{-4}$ \\
 		\hline \rule{0pt}{13pt}
-		50 & 0.5 & 75 & 0.516005 & 121.661$\pm2.068\cdot10^{-3}$ \\
+		50 & 0.5 & 75 & 0.510747 & 121.592$\pm1.787\cdot10^{-3}$ \\
 		\hline \rule{0pt}{13pt}
-		100 & 0.5 & 150 & 0.522644 & 242.544$\pm3.331\cdot10^{-3}$ \\
+		100 & 0.5 & 150 & 0.512658 & 242.332$\pm2.306\cdot10^{-3}$ \\
 		\hline
 	\end{tabular}	
 	\caption{Table for the brute Metropolis computation of the ground state energies with the optimal variational parameters $\alpha_{\text{optimal}}$ found through the gradient descent method for both non-interacting and interacting bosons for $N=10,50,100$ particles. \label{tab:optimal_alpha_grad}}
@@ -702,11 +702,11 @@ With the optimal variational parameters found for the non-interacting and intera
 		\hline \rule{0pt}{13pt}
 		N & $\alpha_{\text{optimal}}$ & $E_L[\hbar\omega_{ho}]$ & $E_L^{GP}[\hbar\omega_{ho}]$\\
 		\hline \rule{0pt}{13pt}
-		10 & 0.503261 & 24.236$\pm0.0025$ & 24.1427 \\
+		10 & 0.507907 & 24.242$\pm0.0025$ & 24.1427 \\
 		\hline \rule{0pt}{13pt}
-		50 & 0.516005 & 121.681$\pm0.0569$ & 120.926 \\
+		50 & 0.510747 & 121.592$\pm0.0569$ & 120.926 \\
 		\hline \rule{0pt}{13pt}
-		100 & 0.522644 & 242.554$\pm0.0999$ & 241.658 \\
+		100 & 0.512658 & 242.332$\pm0.0999$ & 241.658 \\
 		\hline
 	\end{tabular}	
 	\caption{Table for the ground state energies with their respective optimal variational parameter $\alpha_{\text{optimal}}$ for the $N$-particles in three dimensions after using the blocking method to improve the standard deviation in the energies. See here that the error in th energies have increased in comparison to values in Table \ref{tab:optimal_alpha_grad}. \label{tab:blocking_energies}}
