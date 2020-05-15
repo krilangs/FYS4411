@@ -1,0 +1,202 @@
+\documentclass[12pt,a4paper,english]{article}
+\usepackage{times}
+\usepackage[utf8]{inputenc}
+\usepackage{babel,textcomp}
+\usepackage{mathpazo}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb}
+\usepackage{ dsfont }
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ mathrsfs }
+\usepackage{float}
+\usepackage{subfig} 
+\usepackage{multirow}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks]{hyperref}
+\hypersetup{breaklinks=true}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{textcomp}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{backgroundcolor=\color{lbcolor},tabsize=4,rulecolor=,language=python,basicstyle=\scriptsize,upquote=true,aboveskip={1.5\baselineskip},columns=fixed,numbers=left,showstringspaces=false,extendedchars=true,breaklines=true,
+prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,showtabs=false,showspaces=false,showstringspaces=false,identifierstyle=\ttfamily,keywordstyle=\color[rgb]{0,0,1},commentstyle=\color[rgb]{0.133,0.545,0.133},stringstyle=\color[rgb]{0.627,0.126,0.941},literate={å}{{\r a}}1 {Å}{{\r A}}1 {ø}{{\o}}1}
+
+% Use for references
+\usepackage[square,comma,numbers]{natbib}
+%\DeclareRobustCommand{\citeext}[1]{\citeauthor{#1}~\cite{#1}}
+
+% Fix spacing in tables and figures
+%\usepackage[belowskip=-8pt,aboveskip=5pt]{caption}
+%\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+
+% Change the page layout
+%\usepackage[showframe]{geometry}
+%\usepackage{layout}
+\setlength{\hoffset}{-0.7in}  % Length left
+\setlength{\voffset}{-0.7in}  % Length on top
+\setlength{\textwidth}{480pt}  % Width /597pt
+\setlength{\textheight}{665pt}  % Height /845pt
+%\setlength{\footskip}{25pt}
+
+\newcommand{\VEV}[1]{\langle#1\rangle}
+\title{FYS4411 - Project 2\\ The restricted Boltzmann machine applied to the quantum many-body problem}
+\date{}
+\author{ Kristoffer Langstad \footnote{\url{https://github.com/krilangs/FYS4411/tree/master/Project2} \cite{GitHub}}\\ \textit{krilangs@uio.no}}
+
+\begin{document}%\layout
+\maketitle
+\begin{abstract}
+	...
+\end{abstract}
+\section{Introduction}
+\label{sect:Introduction}
+Machine learning is a more and more used method in physics to simulate and study quantum systems. One of the categorizations in machine learning where we consider the desired output of a system, is Neural Networks and Boltzmann machines. Boltzmann machines are a type of unsupervised learning method. One application is to represent a wave function with a restricted Boltzmann machine (RBM). Such a wave function/network is named a neural network quantum state (NQS) after \citet{carleo2017solving}, which used this on quantum mechanical spin lattice systems of the Ising model and Heisenberg mode.
+
+In this project we will test the applicability of the RBM's to quantum mechanics on a system with two interacting electrons confined to move in a harmonic oscillator trap. With two electrons we can exclude Pauli's exclusion principle, which states that no more than two fermions can occupy the same quantum state simultaneously, and the Slater determinant. The system will be studied in one and two dimensions for one and two particles in a quantum dot with different number of hidden nodes for non-interacting particles. Here, we can derive the ground state energy analytically. For the interacting case we only study two electrons in a quantum dot in two dimensions with various number of hidden nodes. In this case, we will compare our computed energies with analytical ground state energies from \citet{taut1993two}.
+
+To do the ground state energy calculation, we will use Variational Monte Carlo (VMC) methods with three different sampling methods: a standard "brute force" Metropolis sampling, an improved Metropolis-Hastings/Importance sampling and Gibbs sampling. We will use a Gaussian-Binary RBM as the neural networks (NN) with visible and hidden nodes to represent the wave function. The weights of these nodes are what we will use as variational parameters to approximate the ground state. We also use a Stochastic Gradient Descent (SGD) with a fixed learning rate to find the parameters that minimize the energy function. Then we do a statistical error analysis on the ground state energies by using the blocking method.
+
+For the layout of this project, we first take a look at the theory of the physics and the numerics we will use in this project. Here get an overview of the physical system, neural networks, restricted Boltzmann machine, the analytical derivations of the ground state energies and then the theory of the numerical methods we are using. In the methods section, we explain what we do with the implementation of the numerical tools we use and the parameters we use for running the code. Here we will use the three sampling methods we have mentioned to sample the ground state energies for varying parameters and cases. The computed energies, with a statistical analysis applied, will be benchmarked against the analytically derived ground state energies to see how well our sampling methods can compare with the analytical results. In the results section, we present and discuss the results we get from the VMC computation. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
+
+\section{Theory}
+\label{sect:Theory}
+\subsection{The System}
+\label{subsect:System}
+We will consider a system of $N=2$ electrons as function of the oscillator frequency $\omega$, confined in a pure 2D isotropic harmonic oscillator. This system is considered as a quantum dot with frequency $\hbar\omega=1$. For this system we have exact closed form expressions for the ground state energy from \citet{taut1993two} for selected values for $\omega$ to use as benchmarks. The total Hamiltonian, with natural units ($\hbar=c=e=m_e=1$), of this system is given as 
+\begin{equation}
+\label{eq:Hamlitonian}
+\hat{H}=\hat{H}_0+\hat{H}_1=\sum_{i=1}^{N}\left(-\frac{1}{2}\nabla^2_i + \frac{1}{2}\omega^2r_i^2\right) + \sum_{i<j}\frac{1}{r_{ij}}.
+\end{equation}
+Here $\hat{H}_0$ is the standard harmonic oscillator part, which is the Hamiltonian we will use without interaction between the electrons, and $\hat{H}_1$ is the repulsive interaction is given by the Coulomb potential. The energies are in atomic units (a.u.), while the modulus of the position for an electron $i$ is $r_i=\sqrt{r^2_{i_x}+r^2_{i_y}}$ and the distance between the electrons are given as $r_{ij}=|\textbf{r}_i-\textbf{r}_j|$.
+
+\subsection{Neural Networks (NN)}
+\label{subsect:NN}
+Much of the differences between this project and the first is that we now look at fermions and that we want to use machine learning and neural networks to represent the wave function. We are still using a variation of the variational Monte Carlo (VMC) calculation to do the simulation.
+
+Neural networks are computational models that are supposed to mimic biological systems, and they consist of layers of nodes that are connected. Neural networks can solve a various of problems like supervised, unsupervised and reinforcement learning. Neural networks have commonly, as seen in Figure \ref{fig:Neural_network}, an input/visible layer, a hidden layer and an output layer. This is a simple case with two input variables/nodes, one hidden layer with 4 nodes and one node in the output layer. This is called a feed-forward neural network (FFNN), since the information only moves in one direction. Neural networks can contain many hidden layers, and the number of nodes in each layer have to be decided by us and may vary from layer to layer. The input and output layers contain as many nodes as there are input and output variables respectively. The number of output variables vary depending on the problem and may differ from the number of input variables. From the figure we see that the input variables are sent to the hidden layer nodes where they are processed with an activation function before sent to the output layer. The connection between the nodes are affected by weight variables \textbf{W}, which gives weighted sums to be passed through an activation function. The outputted weighted sum have to pass a certain threshold to not give zero output. The visible and hidden nodes are usually affected by biases respectively as well. In neural networks a training process is normally used to find the optimal biases and weights that minimize a chosen cost function. Neural Networks have many other aspects which we will not cover in this project, since they are not used.
+
+\begin{figure}[htbp]
+	\centering\includegraphics[width=0.3\linewidth]{Neural_network.png}
+	\caption{Schematic diagram of a simple single hidden layer, feed-forward neural network with two input nodes, four nodes in the single hidden layer and one output node.\label{fig:Neural_network}}
+\end{figure} 
+
+\subsection{Restricted Boltzmann Machine (RBM)}
+\label{subsect:RBM}
+We will use a restricted Boltzmann machine as our neural network of choice for this project. This type of NN consists of one layer with input/visible nodes and one layer consisting of hidden nodes (similar to Figure \ref{fig:Neural_network}). The visible and hidden nodes are also affected by separate biases and weights. There is only a connection between a visible and a hidden node, meaning that there are no connections between nodes in the same layer. With the RBM (generated) network, we want to learn or produce a probability distribution of the simulated system which then is used to generate an output. In this case the wave function $\Psi$ is the probability distribution, and the generated output is positions of the electrons. Here the cost function is given by the gradient of the expectation value of the energy of the wave function with respect to the parameters $\alpha=[\textbf{a}, \textbf{b}, \textbf{W}]$. Minimization of this will lead to the ground state of the system. This gradient will be used in the stochastic gradient descent method, which is explained more later.
+
+The RBM network is classified as a reinforcement learning under unsupervised learning in neural networks. This is because we are not using training data, but use the quantum variational principle where the neural network quantum state (NQS) wave function is used to represent the ground state after the quantum mechanical energy is minimized with respect to the parameters \textbf{a}, \textbf{b} and \textbf{W}. This is then used to optimize the weights and biases of the network. 
+
+For the RBM we only have the joint probability distribution between the visible and hidden nodes:
+\begin{equation}
+\label{eq:F_rbm}
+F_{rbm}(\textbf{X}, \textbf{H})=\frac{1}{Z}e^{-\frac{1}{T_0}E(\textbf{X},\textbf{H})}
+\end{equation}
+\textbf{X} is the visible nodes, which in this case is the output of the system (particle positions), \textbf{H} is the hidden nodes and $Z$ is the partition function or a normalization constant:
+\begin{equation}
+\label{eq:norm_const}
+Z=\int\int \frac{1}{Z}e^{-\frac{1}{T_0}E(\textbf{x},\textbf{h})}d\textbf{x}d\textbf{h}
+\end{equation}
+For simplicity, we will just ignore $T_0$ by setting it to one. $E$ in equation \ref{eq:F_rbm} and \ref{eq:norm_const}, is an energy function describing the relations between the visible and hidden nodes called the energy of the node configuration. The choice of energy function will determine what kind of RBM version we are using. 
+
+For a case where both the visible and hidden nodes only takes on binary values, the most common version of the RMB is used, which is called "binary-binary". For our case with fermions, we want continuous values for the particle positions (visible nodes). So we will use an energy function for the RBM called the "Gaussian-binary":
+\begin{equation}
+\label{eq:Gaussian_binary}
+E(\textbf{X},\textbf{H})=\sum_{i}^{M}\frac{(X_i-a_i)^2}{2\sigma_i^2} - \sum_{j}^{N}b_jH_j - \sum_{i,j}^{M,N}\frac{X_iw_{ij}H_j}{\sigma_i^2}
+\end{equation}
+If $\sigma_i=\sigma$:
+\begin{equation}
+\label{eq:Gaussian_binary2}
+E(\textbf{X},\textbf{H})=\frac{||\textbf{X}-\textbf{a}||^2}{2\sigma^2} - \textbf{b}^T\textbf{H} - \frac{\textbf{X}^T\textbf{W}\textbf{H}}{\sigma^2}
+\end{equation}
+\textbf{X} is a vector of the visible nodes with length $M$, \textbf{a} is a vector of the visible biases with length $M$, \textbf{H} is a vector of the hidden nodes with length $N$, \textbf{b} is a vector of the hidden biases with length $N$ and \textbf{W} is a weight matrix containing the weights characterizing the connection of each visible node to a hidden node of size $M\times N$. We have $M=P\cdot D$ number of visible nodes, where $P$ is the number of particles and $D$ is the number of dimensions. The number of hidden nodes $N$, we will choose and experiment with. The parameters \textbf{a}, \textbf{b} and \textbf{W} will act as variational parameters in standard VMC calculation.
+
+To represent the wave function we will use the marginal probability distribution function (PDF) by summing over the hidden nodes, changing $F_{rbm}(\textbf{X}, \textbf{H})$ in equation \ref{eq:F_rbm} to 
+\begin{equation}
+\label{eq:F_rbm_marginal}
+\Psi(\textbf{X})=F_{rbm}(\textbf{X})=\sum_{\textbf{h}}F_{rbm}(\textbf{X}, \textbf{h})=\frac{1}{Z}\sum_{\textbf{h}}e^{-E(\textbf{X}, \textbf{h})}.
+\end{equation}
+Using the Gaussian-Binary RBM, the wave function becomes:
+\begin{align}
+\Psi(\textbf{X})&=\frac{1}{Z}\sum_{\{h_j\}}e^{-\sum_{i}^{M}\frac{(X_i-a_i)^2}{2\sigma^2} + \sum_{j}^{N}b_jh_j + \sum_{i,j}^{M,N}\frac{X_iw_{ij}h_j}{\sigma^2}}\nonumber\\
+\label{eq:wave_func}
+&=\frac{1}{Z}e^{-\sum_{i}^{M}\frac{(X_i-a_i)^2}{2\sigma^2}}\prod_{j}^{N}\left(1+e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}
+\right)
+\end{align}
+
+\subsection{Local Energy and Analytical Expressions}
+\label{subsect:E_L}
+...............
+
+
+\subsection{Statistical Error Analysis}
+\label{subsect:Error_analysis}
+An important part of the results we get are the errors in these results. In most cases the final results will have some errors that have to be considered to actually give the more correct final results. These errors can be categorized into statistical and systematical errors. Systematical errors are method dependent, mostly due to some changing error in often the method used or the machinery producing the data. This means that they have to be considered differently from case to case. The statistical errors are the differences between the value resulting from the experiment and the known exact solution, which in most cases actually is unknown. To calculate the statistical errors we use the central limit theorem which says that the more data points we use, the closer our resulting distribution will be to the normal distribution. To use this theorem, we have to make an assumption that we have independent and identically distributed (iid) events. With the probability distribution $p(x)$ for $n$ measured data points, we can then calculate the mean value
+\begin{equation}
+\label{eq:stat_mean}
+\langle x \rangle =\mu=\frac{1}{n}\sum_{i=1}^{n}p(x_i)x_i.
+\end{equation}
+With this mean value, we can calculate the sample variance 
+\begin{equation}
+\label{eq:stat_ar}
+\sigma^2=\langle x^2 \rangle-\mu^2=\frac{1}{n}\sum_{i=1}^{n}p(x_i)(x_i-\mu)^2,
+\end{equation}
+and the standard deviation
+\begin{equation}
+\label{eq:stat_STD}
+\text{STD}=\frac{\sigma}{\sqrt{n}}.
+\end{equation}
+For iids there should not be any correlations between the data points. In this project we use a random generator to produce the data points. These random generators do not give 100\% uncorrelated data points, which means that the sample variance gets a covariance term as well (also called the sample error)
+\begin{equation}
+\label{eq:stat_var_cov}
+\sigma_m^2=\frac{\sigma^2}{n}+\text{cov}.
+\end{equation}
+
+Computationally we will use Monte-Carlo calculations, which runs the experiment M number of samples/MC cycles. To account for the possible numerical precision loss we introduce a correlation function 
+\begin{equation}
+\label{eq:stat_corr_func}
+f_d=\frac{1}{n-d}\sum_{k=1}^{n-d}(x_k-\langle x_n\rangle)(x_{k+d}-\langle x_n\rangle),
+\end{equation}
+where $d$ is the distance between the measurements in the sample samples. This now yields an autocorrelation function
+\begin{equation}
+\label{eq:stat_autocorr}
+\kappa_d=\frac{f_d}{\text{Var}(x)}
+\end{equation}
+giving value 1 if there are no correlation between the data. The sample error yields
+\begin{equation*}
+\sigma_m^2=\frac{\sigma^2}{n}+\frac{2}{n}\sigma^2\sum_{d=1}^{n-1}\frac{f_d}{\sigma^2}.
+\end{equation*}
+Now we introduce a correction factor $\tau$ which we will call the autocorrelation time
+\begin{equation}
+\label{eq:stat_autocorr_time}
+\tau= 1+2\sum_{d=1}^{n-1}\kappa_d.
+\end{equation}
+To find this $\tau$ factor, we will use what is called a blocking method, which is explained more later. The blocking method will be used on the produced ground state energy data from the VMC simulations to give more correct errors in the produced energies.
+
+\section{Numerical Algorithms}
+\label{sect:Num_algos}
+\subsection{Variational Monte Carlo}
+\label{subsect:VMC}
+\subsection{Metropolis Algorithm and Sampling Methods}
+\label{subsect:Sampling}
+\subsubsection{Brute Force Metropolis}
+\label{subsubsect:brute_Metropolis}
+\subsubsection{Importance Sampling}
+\label{subsubsect:Importance}
+\subsubsection{Gibbs Sampling}
+\label{subsubsect:Gibbs}
+\subsection{Gradient Descent Method}
+\label{subsect:Gradient}
+Se siste forelesning!!!!!
+\subsection{Blocking}
+\label{subsect:Blocking}
+\section{Methods}
+\label{sect:Methods}
+\section{Results}
+\label{sect:Results}
+\section{Conclusion}
+\label{sect:Conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{myrefs}
+\end{document}
