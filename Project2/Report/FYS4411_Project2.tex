@@ -49,6 +49,8 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 \begin{abstract}
 	...
 \end{abstract}
+
+
 \section{Introduction}
 \label{sect:Introduction}
 Machine learning is a more and more used method in physics to simulate and study quantum systems. One of the categorizations in machine learning where we consider the desired output of a system, is Neural Networks and Boltzmann machines. Boltzmann machines are a type of unsupervised learning method. One application is to represent a wave function with a restricted Boltzmann machine (RBM). Such a wave function/network is named a neural network quantum state (NQS) after \citet{carleo2017solving}, which used this on quantum mechanical spin lattice systems of the Ising model and Heisenberg mode.
@@ -58,6 +60,7 @@ In this project we will test the applicability of the RBM's to quantum mechanics
 To do the ground state energy calculation, we will use Variational Monte Carlo (VMC) methods with three different sampling methods: a standard "brute force" Metropolis sampling, an improved Metropolis-Hastings/Importance sampling and Gibbs sampling. We will use a Gaussian-Binary RBM as the neural networks (NN) with visible and hidden nodes to represent the wave function. The weights of these nodes are what we will use as variational parameters to approximate the ground state. We also use a Stochastic Gradient Descent (SGD) with a fixed learning rate to find the parameters that minimize the energy function. Then we do a statistical error analysis on the ground state energies by using the blocking method.
 
 For the layout of this project, we first take a look at the theory of the physics and the numerics we will use in this project. Here get an overview of the physical system, neural networks, restricted Boltzmann machine, the analytical derivations of the ground state energies and then the theory of the numerical methods we are using. In the methods section, we explain what we do with the implementation of the numerical tools we use and the parameters we use for running the code. Here we will use the three sampling methods we have mentioned to sample the ground state energies for varying parameters and cases. The computed energies, with a statistical analysis applied, will be benchmarked against the analytically derived ground state energies to see how well our sampling methods can compare with the analytical results. In the results section, we present and discuss the results we get from the VMC computation. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
+
 
 \section{Theory}
 \label{sect:Theory}
@@ -184,55 +187,20 @@ E_L&=-\frac{M}{2\sigma^2} +\frac{1}{2}\sum_{i}^{M}\sum_{j}^{N}\Sigma(u_j)\cdot\S
 \end{align}
 This new change in the local energy can easily be coded. We clearly see that the only difference in equation \ref{eq:Full_energy} and \ref{eq:Full_energy_Gibbs} is that the Gibbs local energy has some $\frac{1}{2}$ factors where the other would have a factor of 1. So we only have take into account the half-factors when using the Gibbs sampling in comparison to the other sampling methods.
 
-\subsubsection{Analytical Expressions for Local Energy}
+\subsubsection{Benchmark Ground State Energies}
 \label{subsubsect:Analytical E_L}
 For the non-interacting case we can easily find an analytical expression for the local energy. Here we only look at the harmonic oscillator part of the Hamiltonian $\hat{H}_0$ int equation \ref{eq:Hamlitonian}. The wave function for one electron in an oscillator potential in 2D can be written in terms of Hermite polynomials, $H_{n_x}(\sqrt{\omega}x)$, and a normalization constant $A$ as:
 \begin{equation}
 \label{eq:simple_wf}
 \phi_{n_x,n_y}(x,y)=AH_{n_x}(\sqrt{\omega}x)H_{n_y}(\sqrt{\omega}y)\exp\left(-\frac{\omega(x^2+y^2)}{2}\right)=\phi_{n_x}(x)\cdot\phi_{n_y}(y)
 \end{equation}
-\underline{* 1 particle in 1D:}
-
-For the simplest case with one particle in 1D, the eigenvalues ($\epsilon$) of the Hamiltonian are dependent on the principal quantum number $n_x$ in natural units as
-\begin{equation*}
-\epsilon_{n_x}=\omega(n_x+\frac{1}{2}).
-\end{equation*}
-The local energy then becomes;
-\begin{equation*}
-E_{n_x}=\frac{1}{\phi_{n_x}}H\phi_{n_x}=\epsilon_{n_x}=\omega(n_x+\frac{1}{2})
-\end{equation*}
-In the lowest-lying state $n_x=0 \quad \rightarrow \quad E_0=\frac{\omega}{2}$.\\
-\underline{* 1 particle in 2D:}
-
-For one particle in 2D we get
-\begin{align*}
-H\phi_{n_x,n_y}=H\phi_{n_x}\cdot\phi_{n_y}+H\phi_{n_y}\cdot\phi_{n_x}= \epsilon_{n_x}\phi_{n_x,n_y}+\epsilon_{n_y}\phi_{n_x,n_y}.
-\end{align*}
-The local energy simply becomes:
-\begin{equation*}
-E_{n_x,n_y}=\frac{1}{\phi_{n_x,n_y}}H\phi_{n_x,n_y}=\epsilon_{n_x}+\epsilon_{n_y}=\omega(n_x+n_y+1)
-\end{equation*}
-In the lowest-lying state $n_x=n_y=0\quad \rightarrow \quad E_0=\omega$.\\
-\underline{* 2 particles in 2D:}
-
-For two electrons in 2D, the wave function can be split into two single particle wave function parts:
-\begin{align*}
-\phi(\textbf{r}_1, \textbf{r}_2)=\phi_1(\textbf{r}_1)\cdot\phi_2(\textbf{r}_2)=\phi_{1 n_{x_1}, n_{y_1}}\cdot\phi_{2 n_{x_2}, n_{y_2}}\\
-\rightarrow H\phi(\textbf{r}_1, \textbf{r}_2)=H\phi_1\cdot\phi_2+H\phi_2\cdot\phi_1=\epsilon_{n_{x_1},n_{y_1}}\phi_{1,2}+\epsilon_{n_{x_2},n_{y_2}}\phi_{1,2}
-\end{align*}
-The local energy becomes:
-\begin{equation*}
-E_{n_x,n_y}=\frac{1}{\phi(\textbf{r}_1, \textbf{r}_2)}H\phi(\textbf{r}_1, \textbf{r}_2)=\epsilon_{n_{x_1},n_{y_1}}+\epsilon_{n_{x_2},n_{y_2}}=\omega(n_{x_1}+n_{x_2}+n_{y_1}+ n_{y_2}+2)
-\end{equation*}
-In the lowest-lying state $n_{x_1}=n_{x_2}=n_{y_1}=n_{y_2}=0\quad \rightarrow \quad E_0=2\omega$.\\
-\underline{* Benchmark energies:}
-
-So for non-interacting electrons we can see that the analytical expression for the local energy (in a.u.) can be written in terms of the frequency $\omega$, number of particles $P$ and number of dimensions $D$ as:
+From the derivation of the ground state energies for non-interacting electrons in Appendix \ref{appendix:Analytic_EL}, we can see that the analytical expression for the local energy (in a.u.) can be written in terms of the frequency $\omega$, number of particles $P$ and number of dimensions $D$ as:
 \begin{equation}
 \label{eq:analytic_EL}
 E_L=\frac{\omega}{2}P\cdot D
 \end{equation}
-For analytical values for interacting electrons, we use already calculated analytical ground state energies by \citet{taut1993two}. He found that the local energy for two interacting electrons in 2D with $\omega=1$ is 3 a.u.
+
+For analytical ground state energy values for interacting electrons, we use already calculated analytical ground state energies by \citet{taut1993two}. He found that the ground state energy for two interacting electrons in 2D with $\omega=1$ is 3 a.u.
 
 \subsection{Statistical Error Analysis}
 \label{subsect:Error_analysis}
@@ -277,6 +245,7 @@ Now we introduce a correction factor $\tau$ which we will call the autocorrelati
 \tau= 1+2\sum_{d=1}^{n-1}\kappa_d.
 \end{equation}
 To find this $\tau$ factor, we will use what is called a blocking method, which is explained more later. The blocking method will be used on the produced ground state energy data from the VMC simulations to give more correct errors in the produced energies.
+
 
 \section{Numerical Algorithms}
 \label{sect:Num_algos}
@@ -437,14 +406,45 @@ These new vectors are less correlated since the elements are further away from e
 \end{equation}
 where $\gamma_k$ is the auto-covariance of $\textbf{X}_k$ and $e_k$ is called the truncation error. \citet{flyvbjerg1989error} showed that the truncation error goes to zero as $k$ increases. After $e_k$ is small enough we should get a better estimation of the error in our results. This error should also be larger than we first calculated since it accounts for the correlations.
 
-%......................................................................
+
 \section{Methods}
 \label{sect:Methods}
+The main computation of the ground state energies in this project is done in C++, while the blocking and plotting are done in Python 3.7. All the program-files are found at the GitHub repository \cite{GitHub} among with various data files and figures produced. The programming of the VMC scheme is written in a object oriented way with a class structure. The code structure is more explained in the program itself.
+
+The SGD method is applied many times iteratively in the VMC method to ensure that the set of randomly initiated $\alpha$ gives a lower energy. The final result should then be a good estimate to the ground state energy. After $N_{SGD}$ number of SGD cycles of smaller MC runs (for saving time), we do a final set of the final parameters for a larger number of MC cycles. The local energy for each SGD cycle, together with the standard deviation and the values of the RBM parameters, are exported to data files and used for plotting. The final run exports the local energy for each MC cycles to a separate data file to be used for statistical analysis (blocking). 
+
+This works well with non-interacting electrons which gives converges to a energy with a small fluctuation. For interacting electrons, we do not separate the final run for the final local energy. Here we use all the SGD cycle data to perform a linear fit to the local energies after equilibrium. This mean energy is then used as the final result with a statistical analysis.
+
+\subsection{Non-Interacting Electrons}
+\label{subsect:Method_nonint}
+\subsubsection{Metropolis Sampling}
+\label{subsubsect:Method_Nonint_Metropolis}
+Start by implementing the standard Metropolis algorithm (sect \ref{subsubsect:brute_Metropolis}) in the VMC program. Now we will study the ground state energy of one electron in 1D with two hidden nodes. First we must find the optimal step length $L$ which gives the best compromise between acceptance rate and how fast we reach equilibrium. Test $L=[0.01,0.1,0.5,1.0,2.0]$ with learning rate $\eta=0.1$, $\omega=1$, $N_{SGD}=100$, $N_{MC}=1e5$, $N_{MC,final}=1.5e6$ and $\sigma=1.0$. To find the best step length, we plot the local energy for each step length as a function of the number of SGD cycles to see equilibrium time, and we look at the acceptance rate after the final run. With the optimal $L$ we test different learning rates $\eta=[0.01,0.05,0.1,0.2,0.5,0.6]$. Then we plot the local energy for each learning rate as a function of the number of SGD cycles to find the optimal $\eta$ value. With the optimal $L$ and $\eta$, we use $N_{SGD}=150$ and vary the number of particles $N_P=[1,2]$, dimensions $D=[1,2]$ and hidden nodes to see how the final local energy changes. With the final energy for each case, we do a statistical analysis with blocking which we will use to compare with the benchmarked energy (eq. \ref{eq:analytic_EL}) and between the sampling methods later.
+
+\subsubsection{Importance Sampling}
+\label{subsubsect:Method_Nonint_Importance}
+Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) into the VMC method. With this sampling method we will do the same analysis on the same system as for the standard Metropolis, except that we first test various time steps $\Delta t$ instead of step lengths. We use the same other parameters when testing $\Delta t=[0.001,0.01,0.05,0.1,0.5,1.0,2.0]$ as for testing $L$. We plot the local energy as we did earlier, and use the optimal $\Delta t$ to test the same learning rates. This is also plotted as before to find the best $\eta$. With the two optimal parameters, we vary the number of particles, dimensions and hidden nodes as earlier to get the ground state energy with a statistical analysis.
+
+\subsubsection{Gibbs sampling}
+\label{subsubsect:Method_Nonint_Gibbs}
+Then we implement the Gibbs sampling algorithm (sect. \ref{subsubsect:Gibbs}) into the VMC method. We do the exact same as for the two earlier sampling methods, only that we change the neural network $\sigma=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0]$ instead of $L$ or $\Delta t$. Once again we plot the local energy for changing the $\sigma$ and $\eta$ before doing a statistical analysis on the final local energies for the various number of particles, dimensions and hidden nodes.
+
+After doing the statistical analysis of the local energies, we compare these energies produced by the three sampling methods with the analytical benchmark energies to see which method achieves the closest local energies to the analytical energies.
+
+\subsection{Interacting Electrons}
+\label{subsect:Method_int}
+Since we do not have accounted for Pauli's principle, we will only look at a system of two electrons in 2D. With the optimal values for the parameters $L$, $\Delta t$ and $\sigma$ for the three sampling methods we now add interaction to the system. For each of the three sampling methods we once again vary the learning rate $\eta=[0.1,0.2,0.5,0.6]$ and plot the local energies as function of the number of SGD cycles, which is now $N_{SGD}=600$. For Metropolis and Importance sampling we use $\sigma=1.0$, while in Gibbs sampling we use the optimal $\sigma$ we found for non-interacting Gibbs sampling.
+
+With the respective optimal $\eta$-values for the sampling methods, we experiment with the number of hidden nodes and plot the local energies to see how the hidden nodes affect the computed local energies. On these computed energies we do a linear fit after equilibrium to get a mean energy with a statistical analysis. These mean energies, for each hidden node tested, are compared with the analytical result (sect. \ref{subsubsect:Analytical E_L}) of $E_L=3$ a.u., and compared between the three sampling methods to see which is the better method.
+
+
+%......................................................................
 \section{Results}
 \label{sect:Results}
 \section{Conclusion}
 \label{sect:Conclusion}
 %......................................................................
+
 
 \appendix
 \section*{Appendix:}
@@ -491,6 +491,42 @@ With the new representation of the wave function as $\Psi_G(\textbf{X})=\sqrt{F_
 &\quad -\frac{1}{2}\sum_{i}^{M}\frac{X_i-a_i}{\sigma^2}\sum_{j}^{N}\Sigma(u_j)\cdot\frac{w_{ij}}{\sigma^2} 
 +\frac{1}{4}\sum_{i}^{M}\sum_{j}^{N}(\Sigma(u_j))^2\cdot\frac{w_{ij}^2}{\sigma^4}
 \end{align*}
+
+\section{Analytic Derivation of the Local Energy}
+\label{appendix:Analytic_EL}
+\underline{* 1 particle in 1D:}\\
+To derive the analytic expressions for the local energies we use the harmonic oscillator wave function in equation \ref{eq:simple_wf}. For the simplest case with one particle in 1D, the eigenvalues ($\epsilon$) of the Hamiltonian are dependent on the principal quantum number $n_x$ in natural units as
+\begin{equation*}
+\epsilon_{n_x}=\omega(n_x+\frac{1}{2}).
+\end{equation*}
+The local energy then becomes;
+\begin{equation*}
+E_{n_x}=\frac{1}{\phi_{n_x}}H\phi_{n_x}=\epsilon_{n_x}=\omega(n_x+\frac{1}{2})
+\end{equation*}
+In the lowest-lying state $n_x=0 \quad \Rightarrow \quad E_0=\frac{\omega}{2}$.
+\\ \\
+\underline{* 1 particle in 2D:}\\
+For one particle in 2D we get
+\begin{align*}
+H\phi_{n_x,n_y}=H\phi_{n_x}\cdot\phi_{n_y}+H\phi_{n_y}\cdot\phi_{n_x}= \epsilon_{n_x}\phi_{n_x,n_y}+\epsilon_{n_y}\phi_{n_x,n_y}.
+\end{align*}
+The local energy simply becomes:
+\begin{equation*}
+E_{n_x,n_y}=\frac{1}{\phi_{n_x,n_y}}H\phi_{n_x,n_y}=\epsilon_{n_x}+\epsilon_{n_y}=\omega(n_x+n_y+1)
+\end{equation*}
+In the lowest-lying state $n_x=n_y=0\quad \Rightarrow \quad E_{00}=\omega$.
+\\ \\
+\underline{* 2 particles in 2D:}\\
+For two electrons in 2D, the wave function can be split into two single particle wave function parts:
+\begin{align*}
+\phi(\textbf{r}_1, \textbf{r}_2)=\phi_1(\textbf{r}_1)\cdot\phi_2(\textbf{r}_2)=\phi_{1 n_{x_1}, n_{y_1}}\cdot\phi_{2 n_{x_2}, n_{y_2}}\\
+\rightarrow H\phi(\textbf{r}_1, \textbf{r}_2)=H\phi_1\cdot\phi_2+H\phi_2\cdot\phi_1=\epsilon_{n_{x_1},n_{y_1}}\phi_{1,2}+\epsilon_{n_{x_2},n_{y_2}}\phi_{1,2}
+\end{align*}
+The local energy becomes:
+\begin{equation*}
+E_{n_x,n_y}=\frac{1}{\phi(\textbf{r}_1, \textbf{r}_2)}H\phi(\textbf{r}_1, \textbf{r}_2)=\epsilon_{n_{x_1},n_{y_1}}+\epsilon_{n_{x_2},n_{y_2}}=\omega(n_{x_1}+n_{x_2}+n_{y_1}+ n_{y_2}+2)
+\end{equation*}
+In the lowest-lying state $n_{x_1}=n_{x_2}=n_{y_1}=n_{y_2}=0\quad \Rightarrow \quad E_{00}=2\omega$.\\
 
 \section{Quantum Force Derivation}
 \label{appendix:Quantum_force}
