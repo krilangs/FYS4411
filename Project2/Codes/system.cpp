@@ -40,7 +40,7 @@ bool System::metropolisStep(double GibbsValue, vector<double> &X, vector<double>
     double psi_new = m_waveFunction->evaluate(GibbsValue, X_new, H, a, b, w);
     double prob = psi_new*psi_new/(m_psiOld*m_psiOld);
 
-    if (Random::nextDouble()<prob || 1.0<prob){// Accept new move, non-interaction
+    if (Random::nextDouble()<prob || 1.0<prob){// Accept new move
         m_psiOld = psi_new;
         X = X_new;
         return true;
@@ -73,7 +73,7 @@ bool System::metropolisStepImportance(double GibbsValue, vector<double> &X, vect
     X_new[randparticle] = X_old[randparticle] + 0.5*m_QuantumForce[randparticle]*m_timeStep + m_sqrtTimeStep*(Random::nextGaussian(0.0,1.0));
 
     // Update
-    setQuantumForce(m_waveFunction->QuantumForce(GibbsValue, X_new, a, b, w));
+    setQuantumForce(m_waveFunction->QuantumForce(X_new, a, b, w));
     QF_new = m_QuantumForce;
     updateDistanceMatrix(X_new, randparticle);
 
@@ -100,13 +100,13 @@ bool System::metropolisStepImportance(double GibbsValue, vector<double> &X, vect
     }
 }
 
-bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a, vector<double> b, vector<vector<double> > w){
+bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a, vector<double> b, vector<vector<double>> w){
   //NOT WORKING WITH INTERACTION!!!!!
     // Perform Gibbs Sampling.
     int N = getNumberOfHiddenNodes();
     int M = getNumberOfVisibleNodes();
 
-    double sum, sum2, mean, argument;
+    double sum, sum2, mean, argument, sigmoid;
 
     for (int j=0; j<N; j++){
         sum = 0;
@@ -115,7 +115,15 @@ bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a
         }
 
         argument = exp(-b[j] - sum);
-        H[j] = 1./(1 + argument);
+        sigmoid = 1./(1 + argument);
+
+        if (Random::nextGaussian(0.0,1.0) <= sigmoid){
+            H[j] = 0;
+        }
+        else{
+            H[j] = 1;
+        }
+
     }
 
     for (int i=0; i<M; i++){
@@ -146,7 +154,7 @@ void System::runMetropolisSteps(string method, int numberOfMetropolisSteps, vect
     // Initial values
     setDistanceMatrix(computematrixdistance(X));
     m_psiOld = m_waveFunction->evaluate(GibbsValue, X, H, a, b, w);
-    setQuantumForce(m_waveFunction->QuantumForce(GibbsValue, X, a, b, w));
+    setQuantumForce(m_waveFunction->QuantumForce(X, a, b, w));
 
     vector<double> temp (m_numberOfParameters);
     setCumulativeGradient(temp);
@@ -157,16 +165,15 @@ void System::runMetropolisSteps(string method, int numberOfMetropolisSteps, vect
     bool acceptedStep;
     // Sample after equilibrium have been reached
     for (int i=0; i<numberOfMetropolisSteps; i++) {
-        if (method == "MetropolisBruteForce") acceptedStep = metropolisStep(GibbsValue, X, H, a, b, w);        // Brute force Metropolis
-        if (method == "MetropolisImportance") acceptedStep = metropolisStepImportance(GibbsValue, X, H, a, b, w);   // Importance sampling
-        if (method == "Gibbs") acceptedStep = GibbsSampling(X, H, a, b, w);       // Gibbs Sampling
+        if (method == "MetropolisBruteForce") acceptedStep = metropolisStep(GibbsValue, X, H, a, b, w);  // Standard Metropolis sampling
+        if (method == "MetropolisImportance") acceptedStep = metropolisStepImportance(GibbsValue, X, H, a, b, w);  // Importance sampling
+        if (method == "Gibbs") acceptedStep = GibbsSampling(X, H, a, b, w);  // Gibbs Sampling
 
-        // Sample the energy
+        // Sample the energy and write to file
         m_sampler->sample(acceptedStep, interaction, GibbsValue, X, H, a, b, w);
         m_sampler->writeToFile();
     }
     m_sampler->computeAverages(G);
-    //m_sampler->printOutputToTerminal();
 }
 
 void System::updateDistanceMatrix(vector<double> m_X, int randparticle)
@@ -223,7 +230,8 @@ vector<vector<double>> System::computematrixdistance(vector<double>& m_X)
 }
 
 void System::gradientDescent(vector<double> G, vector<double> X, vector<double> &a, vector<double> &b, vector<vector<double>> &w)
-{//Gradient descent method to find the optimal variational parameter alpha given an initial parameter initialAlpha
+{
+    // Stochastic gradient descent method to optimize the RBM parameters.
     for (int i=0; i<m_numberOfVisibleNodes; i++){
         a[i] -= m_learningRate*G[i];
     }
@@ -245,6 +253,7 @@ void System::gradientDescent(vector<double> G, vector<double> X, vector<double> 
 vector<double> System::GradientParameters(double GibbsValue, vector<double> X, vector<double> &a, vector<double> &b,
                                           vector<vector<double>> &w)
 {
+    // Calculate the gradient of the RBM parameters
     vector<double> GradientPsi (m_numberOfParameters);
     vector<double> argument    (m_numberOfHiddenNodes);
 

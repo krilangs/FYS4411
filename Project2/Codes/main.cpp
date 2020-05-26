@@ -73,18 +73,15 @@ int main() {
         if (interaction == true){ // Interaction
             // SGD data file
             filename_cycle = "Data/BruteCycleInt_"+to_string(stepLength)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
-            // Instantaneous energy data file (of bigger run after SGD)
-            //filename_final = "Data/FinalBruteCycleInt_"+to_string(stepLength)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-            //                 +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
         else{ // No interaction
         // SGD data file
         filename_cycle = "Data/BruteCycle_"+to_string(stepLength)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         // Instantaneous energy data file (of bigger run after SGD)
         filename_final = "Data/FinalBruteCycle_"+to_string(stepLength)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
     }
 
@@ -92,18 +89,15 @@ int main() {
         if (interaction == true){ // Interaction
             // SGD data file
             filename_cycle = "Data/ImpCycleInt_"+to_string(timeStep)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
-            // Instantaneous energy data file (of bigger run after SGD)
-            //filename_final = "Data/FinalImpCycleInt_"+to_string(timeStep)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-            //                 +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
         else{ // No interaction
         // SGD data file
         filename_cycle = "Data/ImpCycle_"+to_string(timeStep)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         // Instantaneous energy data file (of bigger run after SGD)
         filename_final = "Data/FinalImpCycle_"+to_string(timeStep)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
     }
 
@@ -111,18 +105,15 @@ int main() {
         if (interaction == true){ // Interaction
             // SGD data file
             filename_cycle = "Data/GibCycleInt_"+to_string(sigma)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
-            // Instantaneous energy data file (of bigger run after SGD)
-            //filename_final = "Data/FinalGibCycleInt_"+to_string(sigma)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-            //                 +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                             +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
         else{ // No interaction
         // SGD data file
         filename_cycle = "Data/GibCycle_"+to_string(sigma)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         // Instantaneous energy data file (of bigger run after SGD)
         filename_final = "Data/FinalGibCycle_"+to_string(sigma)+"_n_"+to_string(learningRate)+"_Np_"+to_string(numberOfParticles)
-                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+"_w_"+to_string(omega)+".dat";
+                         +"_D_"+to_string(numberOfDimensions)+"_H_"+to_string(numberOfHiddenNodes)+".dat";
         }
     }
 
@@ -140,11 +131,11 @@ int main() {
 
     if (interaction == false){
         cout << " Final run" << endl;
-        system->openDataFile            (filename_final);
+        //system->openDataFile            (filename_final);
         int finalNumberOfSteps = 1.5e+6;
         system->runMetropolisSteps      (method, finalNumberOfSteps, G, interaction, X, H, a, b, w);
         system->printOut                (numberOfCycles);
-        system->writeToFile             (X, a, b, w);
+        //system->writeToFile             (X, a, b, w);
     }
     else{
         system->runMetropolisSteps      (method, numberOfSteps, G, interaction, X, H, a, b, w);

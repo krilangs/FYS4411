@@ -10,8 +10,8 @@
 using namespace std;
 
 NeuralQuantumState::NeuralQuantumState(System* system):WaveFunction(system) {
-    m_numberOfParameters = 3;
-    m_parameters.reserve(3);
+    m_numberOfParameters = getNumberOfParameters();
+    m_parameters.reserve(m_numberOfParameters);
 }
 
 double NeuralQuantumState::evaluate(double GibbsValue, vector<double> X, vector<double> H, vector<double> a, vector<double> b,
@@ -73,9 +73,9 @@ double NeuralQuantumState::computeDoubleDerivative(double GibbsValue, vector<dou
         temp2 = 0;
         temp3 = 0;
         for (int j=0; j<N; j++){
-            double expon = 1.0 + argument[j];
-            temp2 += w[i][j]/expon;
-            temp3 += w[i][j]*w[i][j]*argument[j]/(expon*expon);
+            double sigmoid = 1/(1.0 + argument[j]);
+            temp2 += w[i][j]*sigmoid;
+            temp3 += w[i][j]*w[i][j]*argument[j]*sigmoid*sigmoid;
         }
         firstsum = -(X[i] - a[i]) + temp2;
         firstsum /= m_system->getSigma_squared();
@@ -88,8 +88,7 @@ double NeuralQuantumState::computeDoubleDerivative(double GibbsValue, vector<dou
     return kinetic;
 }
 
-vector<double> NeuralQuantumState::QuantumForce(double GibbsValue, vector<double> X, vector<double> a, vector<double> b,
-                                            vector<vector<double>> w) {
+vector<double> NeuralQuantumState::QuantumForce(vector<double> X, vector<double> a, vector<double> b, vector<vector<double>> w) {
     //Function to compute the Quantum Force for the Importance sampling method.
     int M = m_system->getNumberOfVisibleNodes();
     int N = m_system->getNumberOfHiddenNodes();
@@ -111,11 +110,10 @@ vector<double> NeuralQuantumState::QuantumForce(double GibbsValue, vector<double
     for (int i=0; i<M; i++){
         temp2[i] = 0;
         for (int j=0; j<N; j++){
-            double temp4 = exp(-argument[j]);
-            double expon = 1 + temp4;
-            temp2[i] += w[i][j]/(expon);
+            double sigmoid = 1/(1 + exp(-argument[j]));
+            temp2[i] += w[i][j]*sigmoid;
         }
-        QuantumForce[i] = 2*(-(X[i] - a[i]) + temp2[i])*GibbsValue/m_system->getSigma_squared();
+        QuantumForce[i] = 2*(-(X[i] - a[i]) + temp2[i])/m_system->getSigma_squared();
     }
 
     return QuantumForce;

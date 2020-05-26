@@ -50,7 +50,7 @@ void Sampler::sample(bool acceptedStep, bool interaction, double GibbsValue, vec
         temp2 = m_system->getCumulativeEnGradient();
 
         for (int i=0; i<getDimensionOfGradient(); i++){
-            temp[i] += grad[i];
+            temp[i]  += grad[i];
             temp2[i] += m_energy*grad[i];
         }
 

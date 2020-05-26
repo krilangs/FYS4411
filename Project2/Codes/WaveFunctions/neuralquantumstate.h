@@ -10,7 +10,7 @@ public:
                     vector<vector<double>> w);
     double computeDoubleDerivative(double GibbsValue, vector<double> X, vector<double> H, vector<double> a, vector<double> b,
                                    vector<vector<double>> w);
-    vector<double> QuantumForce(double GibbsValue, vector<double> X, vector<double> a, vector<double> b,
+    vector<double> QuantumForce(vector<double> X, vector<double> a, vector<double> b,
                                 vector<vector<double>> w);
 
 protected:

@@ -12,8 +12,7 @@ public:
                             vector<vector<double>> w) = 0;
     virtual double computeDoubleDerivative(double GibbsValue, vector<double> X, vector<double> H, vector<double> a, vector<double> b,
                                            vector<vector<double>> w) = 0;
-    virtual vector<double> QuantumForce(double GibbsValue, vector<double> X, vector<double> a, vector<double> b,
-                                        vector<vector<double>> w) = 0;
+    virtual vector<double> QuantumForce(vector<double> X, vector<double> a, vector<double> b, vector<vector<double>> w) = 0;
 
     void setParameters(const vector<double> &parameters);
 
