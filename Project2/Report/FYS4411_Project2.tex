@@ -454,19 +454,11 @@ The first thing we have to test is how the local energy as a function of the SGD
 
 \begin{table}[htbp!]
 	\centering
-	\begin{tabular}{|c|c|}
+	\begin{tabular}{|c|c|c|c|c|c|}
 		\hline \rule{0pt}{13pt}
-		L & A \\
+		L & 0.01 & 0.1 & 0.5 & 1.0 & 2.0 \\
 		\hline \rule{0pt}{13pt}
-		2.0 & 0.748 \\
-		\hline \rule{0pt}{13pt}
-		1.0 & 0.870 \\
-		\hline \rule{0pt}{13pt}
-		0.5 & 0.935 \\
-		\hline \rule{0pt}{13pt}
-		0.1 & 0.987 \\
-		\hline \rule{0pt}{13pt}
-		0.01 & 0.999 \\
+		A & 0.999 &  0.987 & 0.935 & 0.870 & 0.748 \\
 		\hline
 	\end{tabular}
 	\caption{Table for the acceptance rate (A) of the Metropolis sampling for various step lengths (L). See here that the smaller the step length is, the bigger and better is the acceptance rate. \label{tab:Met_A}}
@@ -490,23 +482,11 @@ Then we do the same analysis with the Importance sampling instead of Metropolis.
 
 \begin{table}[htbp!]
 	\centering
-	\begin{tabular}{|c|c|}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
 		\hline \rule{0pt}{13pt}
-		$\Delta t$ & A \\
+		$\Delta t$ & 0.001 & 0.01 & 0.05 & 0.1 & 0.5 & 1.0 & 2.0 \\
 		\hline \rule{0pt}{13pt}
-		2.0 & 0.56 \\
-		\hline \rule{0pt}{13pt}
-		1.0 & 0.81 \\
-		\hline \rule{0pt}{13pt}
-		0.5 & 0.93 \\
-		\hline \rule{0pt}{13pt}
-		0.1 & 0.994 \\
-		\hline \rule{0pt}{13pt}
-		0.05 & 0.998 \\
-		\hline \rule{0pt}{13pt}
-		0.01 & 0.9998 \\
-		\hline \rule{0pt}{13pt}
-		0.001 & 0.999996 \\
+		A & 0.999996 & 0.9998 & 0.998 & 0.994 & 0.93 & 0.81 & 0.56 \\
 		\hline
 	\end{tabular}
 	\caption{Table for the acceptance rate (A) of the Importance sampling for various time step ($\Delta t$). See here that the smaller the time step is, the bigger and better is the acceptance rate. \label{tab:Imp_A}}
@@ -522,9 +502,35 @@ With the chosen time step $\Delta t=0.5$, we experiment with the learning rate o
 %......................................................................
 \subsubsection{Gibbs Sampling}
 \label{subsubsect:Results_nonint_Gibbs}
+The last sampling method we use is the Gibbs sampling. The parameters we use are described in the Methods section \ref{subsubsect:Method_Nonint_Gibbs}. For this sampling method we have to tune the $\sigma$ parameter which we used as $\sigma=1.0$ for the other two sampling methods. In Figure \ref{fig:check_sigma} we see how the local energy as a function of the SGD cycles behaves for various sigmas. From the figure we can clearly see that the Gibbs sampling converges towards different energies for different sigmas. So the Gibbs sampling is very dependent on which value we use for $\sigma$. Here we see that when we use $\sigma=0.6$ or 0.7, the solution converges towards the analytical ground state energy. $\sigma=0.6$ reach equilibrium in fewer SGD cycles than $\sigma=0.7$ does, which is why we might assume $\sigma=0.6$ as the best Gibbs parameter in this case. With this sampling method, the acceptance rate is always 1. So we get no new information by looking at the acceptance rate when choosing the best sigma parameter.
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{sigma.png}
+	\caption{Local energy as function of the SGD cycle for various Gibbs sampling sigmas. For $\sigma=[0.6, 0.7]$ we see convergence towards the analytical ground state energy. \label{fig:check_sigma}}
+\end{figure}
+
+With $\sigma=0.6$, we experiment with the learning rate. In Figure \ref{fig:check_learnrate_Gib} we see how the local energy behaves for various learning rates. The plots are similar to Importance sampling, except that for $\sigma\geq0.5$ the curves jump at the beginning before a fast convergence towards the exact solution. The best learning rate parameter seems to be $\eta=0.2$, as for the other sampling methods. 
+
+In Figure \ref{fig:check_learnrates_Gib} we see a comparison of the local energy with the two best learning rates for both $\sigma=0.6$ and 0.7. There we see that $\eta=0.2$ is the best learning rate for both sigmas. For the smaller sigma, we reach equilibrium faster than for the bigger. From these figures we could conclude with that $\sigma=0.6$ would be the best parameter to use with Gibbs sampling. By further testing of the local energy with these sigmas, the final local energy seems to be best when we use $\sigma=0.7$. So even $\sigma=0.6$ reaches equilibrium fastest, it's $\sigma=0.7$ that gives the best final energy. That is why we use $\sigma=0.7$ as the best Gibbs sampling parameter.
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Gib_learnrate.png}
+	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.6$. See here that the higher the learning rate is, the faster the solution reaches the equilibrium. Get very similar curves as for Importance sampling, except for the two biggest parameters which deviates some in the beginning. \label{fig:check_learnrate_Gib}}
+\end{figure} 
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Gib_learnrate_test.png}
+	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.6$ and $\sigma=0.7$. Further check for the best sigma  and learning rate parameters. \label{fig:check_learnrates_Gib}}
+\end{figure} 
+
 \subsubsection{Local Energy Analysis of Sampling Methods}
 \label{subsubsect:Results_nonint_Analysis}
-WAIT FOR GIBBS!!!
+With all the best parameters for the three sampling methods, we will look at the final energies produced from each sampling method when we vary the number of particles ($N_P$), dimensions ($D$) and hidden nodes ($N_H$). In Table \ref{tab:Nonint_energies} we see the local energies for non-interacting electrons produced by each sampling method as described in the caption of the table. To produce these local energies we use $N_{SGD}=150$ and $\eta=0.2$ for all three sampling methods. The Metropolis step length is $L=0.5$, and the Importance time step is $\Delta t=0.5$. With these two sampling methods we also use $\sigma=1.0$, while we use $\sigma=0.7$ with Gibbs sampling.
+
+The most accurate sampling method seems to be Gibbs, since the produced local energies are on average more close to the analytical ground state energies in terms of both accuracy and the errors (from blocking). For all three sampling methods we see that the local energies for $N_P=1,D=2$ and $N_P=2,D=1$ are the same for each sampling method respectively. From this it seems that the computation of the energy is the same when the sum of the number of particles and dimensions are the same with that sampling method.
+
+Another thing we notice when we increase the number of hidden nodes but keep $N_P$ and $D$ the same, is that the average $E_L$ with blocking increases by a small amount each time $N_H$ is increased. On average, the errors also increase as the number of hidden nodes as increased. This also goes for the time to do the full MC calculation for each sampling method. 
+
 \begin{table}[htbp!]
 	\centering
 	%\hspace{-1.0cm}
@@ -532,25 +538,25 @@ WAIT FOR GIBBS!!!
 		\hline \rule{0pt}{13pt}
 		$N_P$ & D & $N_H$ & $E_A$ & $E_L^M$ & $E_L^I$ & $E_L^G$ \\
 		\hline \rule{0pt}{13pt}%
-		1 & 1 & 1 & 0.5 & 0.500$\pm1.6\cdot10^{-8}$ & 0.500$\pm3.6\cdot10^{-9}$ & ... \\
+		1 & 1 & 1 & 0.5 & 0.500$\pm1.6\cdot10^{-8}$ & 0.500$\pm3.6\cdot10^{-9}$ & 0.500$\pm1.4\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		1 & 1 & 2 & 0.5 & 0.501$\pm5.0\cdot10^{-4}$ & 0.501$\pm6.0\cdot10^{-5}$ & ... \\
+		1 & 1 & 2 & 0.5 & 0.501$\pm5.0\cdot10^{-4}$ & 0.501$\pm6.0\cdot10^{-5}$ & 0.500$\pm2.3\cdot10^{-5}$ \\
 		\hline \rule{0pt}{13pt}%
-		1 & 2 & 1 & 1.0 & 1.050$\pm3.5\cdot10^{-3}$ & 1.001$\pm8.1\cdot10^{-5}$ & ... \\
+		1 & 2 & 1 & 1.0 & 1.050$\pm3.5\cdot10^{-3}$ & 1.001$\pm8.1\cdot10^{-5}$ & 1.000$\pm2.6\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		1 & 2 & 2 & 1.0 & 1.002$\pm5.6\cdot10^{-4}$ & 1.001$\pm1.1\cdot10^{-4}$ & ... \\
+		1 & 2 & 2 & 1.0 & 1.002$\pm5.6\cdot10^{-4}$ & 1.001$\pm1.1\cdot10^{-4}$ & 1.000$\pm2.9\cdot10^{-5}$ \\
 		\hline \rule{0pt}{13pt}%
-		2 & 1 & 1 & 1.0 & 1.050$\pm3.5\cdot10^{-3}$ & 1.001$\pm8.1\cdot10^{-5}$ & ... \\
+		2 & 1 & 1 & 1.0 & 1.050$\pm3.5\cdot10^{-3}$ & 1.001$\pm8.1\cdot10^{-5}$ & 1.000$\pm2.6\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 1 & 2 & 1.0 & 1.002$\pm5.6\cdot10^{-4}$ & 1.001$\pm1.1\cdot10^{-4}$ & ... \\
+		2 & 1 & 2 & 1.0 & 1.002$\pm5.6\cdot10^{-4}$ & 1.001$\pm1.1\cdot10^{-4}$ & 1.000$\pm2.9\cdot10^{-5}$ \\
 		\hline \rule{0pt}{13pt}%
-		2 & 2 & 1 & 2.0 & 1.999$\pm3.0\cdot10^{-4}$ & 2.000$\pm6.4\cdot10^{-5}$ & ... \\
+		2 & 2 & 1 & 2.0 & 1.999$\pm3.0\cdot10^{-4}$ & 2.000$\pm6.4\cdot10^{-5}$ & 2.000$\pm3.0\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 2 & 2.0 & 2.000$\pm5.1\cdot10^{-4}$ & 2.001$\pm1.1\cdot10^{-4}$ & ... \\
+		2 & 2 & 2 & 2.0 & 2.000$\pm5.1\cdot10^{-4}$ & 2.001$\pm1.1\cdot10^{-4}$ & 2.000$\pm2.7\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 3 & 2.0 & 2.002$\pm8.5\cdot10^{-4}$ & 2.002$\pm1.7\cdot10^{-4}$ & ... \\
+		2 & 2 & 3 & 2.0 & 2.002$\pm8.5\cdot10^{-4}$ & 2.002$\pm1.7\cdot10^{-4}$ & 2.000$\pm3.4\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 4 & 2.0 & 2.001$\pm9.3\cdot10^{-4}$ & 2.002$\pm2.0\cdot10^{-4}$ & ... \\
+		2 & 2 & 4 & 2.0 & 2.001$\pm9.3\cdot10^{-4}$ & 2.002$\pm2.0\cdot10^{-4}$ & 2.000$\pm3.5\cdot10^{-5}$ \\
 		\hline
 	\end{tabular}	
 	\caption{Table for the final local energy (in a.u.) of non-interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). \label{tab:Nonint_energies}}
@@ -609,13 +615,13 @@ WAIT FOR GIBBS!!!
 		\hline \rule{0pt}{13pt}
 		$N_P$ & D & $N_H$ & $E_A$ & $E_L^M$ & $E_L^I$ & $E_L^G$ \\
 		\hline \rule{0pt}{13pt}%
-		2 & 2 & 1 & 3.0 & 3.139$\pm1.6\cdot10^{-4}$ & 3.144$\pm4.0\cdot10^{-5}$ & ... \\
+		2 & 2 & 1 & 3.0 & 3.139$\pm1.6\cdot10^{-4}$ & 3.144$\pm4.0\cdot10^{-5}$ & 4.375$\pm4.9\cdot10^{-6}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 2 & 3.0 & 3.079$\pm1.3\cdot10^{-4}$ & 3.081$\pm1.2\cdot10^{-4}$ & ... \\
+		2 & 2 & 2 & 3.0 & 3.079$\pm1.3\cdot10^{-4}$ & 3.081$\pm1.2\cdot10^{-4}$ & 4.374$\pm7.8\cdot10^{-6}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 3 & 3.0 & 3.083$\pm1.4\cdot10^{-4}$ & 3.084$\pm3.3\cdot10^{-5}$ & ... \\
+		2 & 2 & 3 & 3.0 & 3.083$\pm1.4\cdot10^{-4}$ & 3.084$\pm3.3\cdot10^{-5}$ & 4.374$\pm2.6\cdot10^{-6}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 4 & 3.0 & 3.086$\pm2.2\cdot10^{-4}$ & 3.086$\pm3.5\cdot10^{-5}$ & ... \\
+		2 & 2 & 4 & 3.0 & 3.086$\pm2.2\cdot10^{-4}$ & 3.086$\pm3.5\cdot10^{-5}$ & 4.374$\pm2.6\cdot10^{-6}$ \\
 		\hline
 	\end{tabular}	
 	\caption{Table for the final local energy of interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). \label{tab:Int_energies}}
