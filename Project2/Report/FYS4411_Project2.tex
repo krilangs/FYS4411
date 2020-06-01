@@ -47,7 +47,9 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 \begin{document}%\layout
 \maketitle
 \begin{abstract}
-	...
+In this project we study fermions in a harmonic oscillator potential using a restricted Boltzmann machine (RBM) to approximate the wave function as a neural network quantum state (NQS) combined with a variational Monte Carlo (VMC) method. To compute the ground state of the system, a stochastic gradient descent (SGD) method was used, and to do a statistical analysis of the results we use blocking. The computation of the system is tested with three sampling methods; a standard brute-force Metropolis method, Importance sampling and Gibbs sampling.
+
+The computed energies in atomic units (a.u.) are benchmarked against analytical ground state energies for systems of one and two electrons in one and two dimensions with and without interaction. The computed results are found a strongly dependent on the initial guesses of the variational/RBM parameters of the system, together with the sampling and learning rate parameters. For the non-interacting case the Gibbs method is found to give the best solutions with the best errors for $\sigma=0.7$ and $\eta=0.2$, but all three sampling methods produce good energies with the found best parameters. For interaction the Importance sampling is found to give the best energies and errors for two electrons in 2D. In this case the Gibbs sampling provide too high energies, leading to a conclusion of some numerical error with this sampling method.
 \end{abstract}
 
 
@@ -499,7 +501,6 @@ With the chosen time step $\Delta t=0.5$, we experiment with the learning rate o
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Importance sampling and $\Delta t=0.5$. See here that the higher the learning rate is, the faster the solution reaches the equilibrium. Get very similar curves as for Metropolis, but in this case the curves are much smoother. \label{fig:check_learnrate_Imp}}
 \end{figure} 
 
-%......................................................................
 \subsubsection{Gibbs Sampling}
 \label{subsubsect:Results_nonint_Gibbs}
 The last sampling method we use is the Gibbs sampling. The parameters we use are described in the Methods section \ref{subsubsect:Method_Nonint_Gibbs}. For this sampling method we have to tune the $\sigma$ parameter which we used as $\sigma=1.0$ for the other two sampling methods. In Figure \ref{fig:check_sigma} we see how the local energy as a function of the SGD cycles behaves for various sigmas. From the figure we can clearly see that the Gibbs sampling converges towards different energies for different sigmas. So the Gibbs sampling is very dependent on which value we use for $\sigma$. Here we see that when we use $\sigma=0.6$ or 0.7, the solution converges towards the analytical ground state energy. $\sigma=0.6$ reach equilibrium in fewer SGD cycles than $\sigma=0.7$ does, which is why we might assume $\sigma=0.6$ as the best Gibbs parameter in this case. With this sampling method, the acceptance rate is always 1. So we get no new information by looking at the acceptance rate when choosing the best sigma parameter.
@@ -511,7 +512,7 @@ The last sampling method we use is the Gibbs sampling. The parameters we use are
 
 With $\sigma=0.6$, we experiment with the learning rate. In Figure \ref{fig:check_learnrate_Gib} we see how the local energy behaves for various learning rates. The plots are similar to Importance sampling, except that for $\sigma\geq0.5$ the curves jump at the beginning before a fast convergence towards the exact solution. The best learning rate parameter seems to be $\eta=0.2$, as for the other sampling methods. 
 
-In Figure \ref{fig:check_learnrates_Gib} we see a comparison of the local energy with the two best learning rates for both $\sigma=0.6$ and 0.7. There we see that $\eta=0.2$ is the best learning rate for both sigmas. For the smaller sigma, we reach equilibrium faster than for the bigger. From these figures we could conclude with that $\sigma=0.6$ would be the best parameter to use with Gibbs sampling. By further testing of the local energy with these sigmas, the final local energy seems to be best when we use $\sigma=0.7$. So even $\sigma=0.6$ reaches equilibrium fastest, it's $\sigma=0.7$ that gives the best final energy. That is why we use $\sigma=0.7$ as the best Gibbs sampling parameter.
+In Figure \ref{fig:check_learnrates_Gib} we see a comparison of the local energy with the two best learning rates for both $\sigma=0.6$ and 0.7. There we see that $\eta=0.2$ is the best learning rate for both sigmas. For the smaller sigma, we reach equilibrium faster than for the bigger. From these figures we could conclude with that $\sigma=0.6$ would be the best parameter to use with Gibbs sampling. By further testing of the local energy with these sigmas, the final local energy seems to be best when we use $\sigma=0.7$. So even though $\sigma=0.6$ reaches equilibrium the fastest, it's $\sigma=0.7$ that gives the best final energy. That is why we use $\sigma=0.7$ as the best Gibbs sampling parameter.
 
 \begin{figure}[htbp!]
 	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Gib_learnrate.png}
@@ -527,7 +528,7 @@ In Figure \ref{fig:check_learnrates_Gib} we see a comparison of the local energy
 \label{subsubsect:Results_nonint_Analysis}
 With all the best parameters for the three sampling methods, we will look at the final energies produced from each sampling method when we vary the number of particles ($N_P$), dimensions ($D$) and hidden nodes ($N_H$). In Table \ref{tab:Nonint_energies} we see the local energies for non-interacting electrons produced by each sampling method as described in the caption of the table. To produce these local energies we use $N_{SGD}=150$ and $\eta=0.2$ for all three sampling methods. The Metropolis step length is $L=0.5$, and the Importance time step is $\Delta t=0.5$. With these two sampling methods we also use $\sigma=1.0$, while we use $\sigma=0.7$ with Gibbs sampling.
 
-The most accurate sampling method seems to be Gibbs, since the produced local energies are on average more close to the analytical ground state energies in terms of both accuracy and the errors (from blocking). For all three sampling methods we see that the local energies for $N_P=1,D=2$ and $N_P=2,D=1$ are the same for each sampling method respectively. From this it seems that the computation of the energy is the same when the sum of the number of particles and dimensions are the same with that sampling method.
+The most accurate sampling method seems to be Gibbs, since the produced local energies are on average more close to the analytical ground state energies in terms of both accuracy and the errors (from blocking). In the case of CPU time for doing the computation, the Metropolis is the fastest sampling method while Importance sampling gave the slowest CPU time. For all three sampling methods we see that the local energies for $N_P=1,D=2$ and $N_P=2,D=1$ are the same for each sampling method respectively. From this it seems that the computation of the energy is the same when the sum of the number of particles and dimensions are the same with that sampling method.
 
 Another thing we notice when we increase the number of hidden nodes but keep $N_P$ and $D$ the same, is that the average $E_L$ with blocking increases by a small amount each time $N_H$ is increased. On average, the errors also increase as the number of hidden nodes as increased. This also goes for the time to do the full MC calculation for each sampling method. 
 
@@ -561,7 +562,6 @@ Another thing we notice when we increase the number of hidden nodes but keep $N_
 	\end{tabular}	
 	\caption{Table for the final local energy (in a.u.) of non-interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). \label{tab:Nonint_energies}}
 \end{table}
-%......................................................................
 
 \subsection{Interacting Electrons}
 \label{subsect:Results_int}
@@ -602,12 +602,32 @@ In Figure \ref{fig:check_hidden_Int_Imp} we vary the number of hidden nodes with
 	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Importance sampling, $\Delta t=0.5$ and $\eta=0.2$ for two interacting electrons in 2D. Using one hidden node does not give as good solution as the two, three and four hidden nodes. \label{fig:check_hidden_Int_Imp}}
 \end{figure} 
 
-%......................................................................
 \subsubsection{Gibbs Sampling}
 \label{subsubsect:Results_int_Gibbs}
+As with th non-interacting case, we use the same Gibbs parameter $\sigma=0.7$. With this parameter we test the learning rate with Gibbs sampling. In Figure \ref{fig:check_learnrate_Int_Gib} we see that the local energy quickly drops, before it increases a little and reach equilibrium around 200 SGD cycles. With $\eta\geq0.5$, the drop is much bigger than with smaller learning rates. So the local energy has increases more with these bigger learning rates before it reaches equilibrium. The best learning rate seems to be $\eta=0.2$, like before.
+
+A thing to notice with this interacting case when using Gibbs sampling is that we don't get the expected analytical ground state energy of 3 a.u. The computed local energy seems to converge around 4.374 a.u. instead. So we can assume that there is something wrong with the numerics when we use Gibbs sampling with interaction, since we would expect convergence closer to the analytical ground state energy. 
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Int_Gib_learnrate.png}
+	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.7$ for two interacting electrons in 2D. For lower learning rates the solution approaches equilibrium faster than bigger learning rates in the beginning, but they all reach equilibrium around 200 SGD cycles. \label{fig:check_learnrate_Int_Gib}}
+\end{figure}
+
+In Figure \ref{fig:check_hidden_Int_Gib} we vary the number of hidden nodes using the best learning rate with Gibbs sampling. The local energy drops quickly towards equilibrium in the beginning, which is still not around the expected analytical ground state energy, before it flattens out. The exception is with two hidden nodes. There the local energy drops a little more in the beginning than for the others, before it increases and reaches equilibrium at around the same time as for the other number of hidden nodes around 200 SGD cycles. 
+
+\begin{figure}[htbp!]
+	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Hidden_Int_Gib.png}
+	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Gibbs sampling, $\sigma=0.7$ and $\eta=0.2$ for two interacting electrons in 2D. They all converge in a similar matter, except for two hidden nodes which drops more in the beginning before it increases towards equilibrium. \label{fig:check_hidden_Int_Gib}}
+\end{figure}
+
 \subsubsection{Local Energy Analysis of Sampling Methods}
 \label{subsubsect:Results_int_Analysis}
-WAIT FOR GIBBS!!!
+With the best parameters for the three sampling methods, we look more at how the computed local energies are as we vary the number of hidden nodes. The final local energies for two interacting electrons in 2D can be seen in Table \ref{tab:Int_energies}. Here we have used $N_{SGD}=600$ and $\eta=0.2$ for all the sampling methods, and used the same best sampling parameters as in the non-interacting cases.
+
+In the non-interacting case we got that the Gibbs sampling gave the best solution. We would also expect this in the interacting case since the sampling method should not change the solution of the model that significantly, but because of some unknown numerical error the Gibbs sampling does not converge towards the analytical ground state energy. In this case the standard Metropolis gives slightly better average energies, while the Importance sampling error is smaller than the standard Metropolis. Even though the Gibbs method does not converge correct, it provides the smallest errors. Like with the non-interacting system, the Metropolis is the fastest method and Importance is the slowest method of the three.
+
+Also here, the CPU time for doing the computations increase when we use a higher number of hidden nodes. When we use one hidden node, wee see that the local energies are higher than for more hidden nodes.
+
 \begin{table}[htbp!]
 	\centering
 	%\hspace{-1.0cm}
@@ -626,10 +646,17 @@ WAIT FOR GIBBS!!!
 	\end{tabular}	
 	\caption{Table for the final local energy of interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). \label{tab:Int_energies}}
 \end{table}
+
+
 \section{Conclusion}
 \label{sect:Conclusion}
-%......................................................................
+In this project we have used a restricted Boltzmann machine and neural network with a variational Monte Carlo method to compute the ground state energy of interacting and non-interacting systems consisting of electrons in a 2D isotropic harmonic oscillator potential. These ground state energies have been computed both analytically and numerically to check how well the RBM neural network can reproduce the energy of the system. To do this we have used the standard brute-force Metropolis sampling, Importance sampling and Gibbs sampling methods. To optimize the system we also used a stochastic gradient descent method, and used blocking for a statistical analysis of the errors. With these methods we look at different choices of parameters for each method to see how they affected our computation of the ground state energies.
 
+In the non-interacting case we got energies very close to the analytically calculated ground state energies for all the three sampling methods. Here the Gibbs sampling gave the best solutions with the smallest errors. The Metropolis method was the fastest method in CPU time, but it also gave slightly worse solutions than the other two sampling methods.
+
+For the interacting case we got energies a little higher than the analytically calculated energies. For the Metropolis and Importance methods, we got reasonably good energies close to the analytical energies. The Metropolis was also the fastest method in CPU time here, while Importance was the slowest but gave a better error than Metropolis. The Gibbs method did not converge towards the expected analytical energy when interaction was involved. This leads us to assume that something was not working properly with the program.
+
+For future work, we could try to use other optimization methods like ADAM. We could also do a steepest descent method on some of the parameters we have used to make them adapt to make a better fit to the evolving behavior of the system. To get faster CPU times we could implement parallelization by using MPI. The system we have look at in this project have not included Pauli's principle. So this is something we could implement in future work.
 
 \appendix
 \section*{Appendix:}
