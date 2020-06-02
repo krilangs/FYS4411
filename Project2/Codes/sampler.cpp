@@ -26,24 +26,22 @@ void Sampler::sample(bool acceptedStep, bool interaction, double GibbsValue, vec
     if (m_stepNumber == 0) {
         m_cumulativeEnergy = 0;
         m_cumulativeEnergySquared = 0;
-        m_cumulativeWFderiv = 0;
-        m_cumulativeWFderivMultEloc = 0;
     }
 
     m_energy = m_system->getHamiltonian()->computeLocalEnergy(interaction, GibbsValue, X, H, a, b, w);
 
     if ((double)getStepNumber() >= m_system->getEquilibrationFraction()*getNumberOfMetropolisSteps()){
         // Sample if the system is at equilibrium
-        if (acceptedStep==true){
+        if (acceptedStep == true){
             m_acceptedNumber++;
         }
 
         m_cumulativeEnergy          += m_energy;
         m_cumulativeEnergySquared   += m_energy*m_energy;
 
-        vector<double> temp (getDimensionOfGradient());
-        vector<double> temp2 (getDimensionOfGradient());
-        vector<double> grad (getDimensionOfGradient());
+        vector<double> temp(getDimensionOfGradient());
+        vector<double> temp2(getDimensionOfGradient());
+        vector<double> grad(getDimensionOfGradient());
 
         grad = m_system->GradientParameters(GibbsValue, X, a, b, w);
         temp = m_system->getCumulativeGradient();
@@ -56,9 +54,6 @@ void Sampler::sample(bool acceptedStep, bool interaction, double GibbsValue, vec
 
         m_system->setCumulativeGradient(temp);
         m_system->setCumulativeEnGradient(temp2);
-
-        //m_cumulativeWFderiv         += m_WFderiv;
-        //m_cumulativeWFderivMultEloc += m_WFderiv*m_energy;
     }
 
     m_stepNumber++;
@@ -79,7 +74,6 @@ void Sampler::printOutputToTerminal(int cycle) {
     double  var   = (m_cumulativeEnergySquared - m_energy*m_energy)/MC_eq;
     double  std   = sqrt(fabs(m_cumulativeEnergySquared - m_energy*m_energy))/sqrt(MC_eq);
     double  A     =  m_acceptedNumber/MC_eq;
-    vector<double> param = m_system->getWaveFunction()->getParameters();
     ofile.close();
 
     if (cycle == 0){
@@ -97,9 +91,6 @@ void Sampler::printOutputToTerminal(int cycle) {
         cout << endl;
         cout << "  -- Wave function parameters -- " << endl;
         cout << " Number of parameters : " << Np << endl;
-        //for (int i=0; i<Np; i++) {
-        //    cout << " Parameter " << i+1 << " : " << param.at(i) << endl;
-        //}
     }
     cout << endl;
     cout << "  -- Results -- " << endl;
@@ -117,11 +108,9 @@ void Sampler::computeAverages(vector<double> &G) {
 
     m_energy = m_cumulativeEnergy/frac;
     m_cumulativeEnergySquared /= frac;
-    //m_cumulativeWFderiv /= m_system->getNumberOfMetropolisSteps();
-    //m_cumulativeWFderivMultEloc /= m_system->getNumberOfMetropolisSteps();
 
-    vector<double> temp (getDimensionOfGradient());
-    vector<double> temp2 (getDimensionOfGradient());
+    vector<double> temp(getDimensionOfGradient());
+    vector<double> temp2(getDimensionOfGradient());
 
     temp = m_system->getCumulativeGradient();
     temp2 = m_system->getCumulativeEnGradient();
@@ -202,56 +191,6 @@ void Sampler::setCumulativeEnergySquared(double cumulativeEnergySquared)
 double Sampler::getCumulativeEnergySquared() const
 {
     return m_cumulativeEnergySquared;
-}
-
-void Sampler::setCumulativeWF(double cumulativeWF)
-{
-    m_cumulativeWF = cumulativeWF;
-}
-
-double Sampler::getCumulativeWF() const
-{
-    return m_cumulativeWF;
-}
-
-void Sampler::setCumulativeWFderiv(double cumulativeWFderiv)
-{
-    m_cumulativeWFderiv = cumulativeWFderiv;
-}
-
-double Sampler::getCumulativeWFderiv() const
-{
-    return m_cumulativeWFderiv;
-}
-
-void Sampler::setCumulativeWFderivMultEloc(double cumulativeWFderivMultEloc)
-{
-    m_cumulativeWFderivMultEloc = cumulativeWFderivMultEloc;
-}
-
-double Sampler::getCumulativeWFderivMultEloc() const
-{
-    return m_cumulativeWFderivMultEloc;
-}
-
-void Sampler::setWFderiv(double WFderiv)
-{
-    m_WFderiv = WFderiv;
-}
-
-double Sampler::getWFderiv() const
-{
-    return m_WFderiv;
-}
-
-void Sampler::setWFderivMultELoc(double WFderivMultELoc)
-{
-    m_WFderivMultELoc = WFderivMultELoc;
-}
-
-double Sampler::getWFderivMultELoc() const
-{
-    return m_WFderivMultELoc;
 }
 
 int Sampler::getDimensionOfGradient() const

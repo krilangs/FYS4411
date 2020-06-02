@@ -66,16 +66,17 @@ double NeuralQuantumState::computeDoubleDerivative(double GibbsValue, vector<dou
         for (int i=0; i<M; i++){
             sum += X[i]*w[i][j]/m_system->getSigma_squared();
         }
-        argument[j] = exp(-b[j] - sum);
+        argument[j] = -b[j] - sum;
     }
 
     for (int i=0; i<M; i++){
         temp2 = 0;
         temp3 = 0;
         for (int j=0; j<N; j++){
-            double sigmoid = 1/(1.0 + argument[j]);
+            double sigmoid = 1./(1 + exp(argument[j]));
+            double sigmoid_min = 1./(1 + exp(-argument[j]));
             temp2 += w[i][j]*sigmoid;
-            temp3 += w[i][j]*w[i][j]*argument[j]*sigmoid*sigmoid;
+            temp3 += w[i][j]*w[i][j]*sigmoid_min*sigmoid;
         }
         firstsum = -(X[i] - a[i]) + temp2;
         firstsum /= m_system->getSigma_squared();
@@ -110,7 +111,7 @@ vector<double> NeuralQuantumState::QuantumForce(vector<double> X, vector<double>
     for (int i=0; i<M; i++){
         temp2[i] = 0;
         for (int j=0; j<N; j++){
-            double sigmoid = 1/(1 + exp(-argument[j]));
+            double sigmoid = 1./(1 + exp(-argument[j]));
             temp2[i] += w[i][j]*sigmoid;
         }
         QuantumForce[i] = 2*(-(X[i] - a[i]) + temp2[i])/m_system->getSigma_squared();

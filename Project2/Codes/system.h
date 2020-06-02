@@ -69,7 +69,6 @@ public:
     double getLearningRate()            const;
     double getDistanceMatrixij          (int i, int j)      const;
     double computedistance              (int i);
-    double findEnergyDerivative();
 
     vector<vector<double>>              getDistanceMatrix() const;
     vector<double>                      getQuantumForce()   const;

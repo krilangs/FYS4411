@@ -101,23 +101,25 @@ bool System::metropolisStepImportance(double GibbsValue, vector<double> &X, vect
 }
 
 bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a, vector<double> b, vector<vector<double>> w){
-  //NOT WORKING WITH INTERACTION!!!!!
     // Perform Gibbs Sampling.
     int N = getNumberOfHiddenNodes();
     int M = getNumberOfVisibleNodes();
 
-    double sum, sum2, mean, argument, sigmoid;
+    double sum, sum2, mean, sigmoid;
 
+    // Set new hidden variables given positions, according to the logistic sigmoid function
+    // (implemented by comparing the sigmoid probability to a uniform random variable)
     for (int j=0; j<N; j++){
         sum = 0;
         for (int i=0; i<M; i++){
             sum += X[i]*w[i][j]/getSigma_squared();
         }
 
-        argument = exp(-b[j] - sum);
-        sigmoid = 1./(1 + argument);
+        sigmoid = 1./(1 + exp(-b[j] - sum));
 
-        if (Random::nextGaussian(0.0,1.0) <= sigmoid){
+        //H[j] = Random::nextDouble() < sigmoid;
+
+        if (Random::nextDouble() <= sigmoid){
             H[j] = 0;
         }
         else{
@@ -126,6 +128,7 @@ bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a
 
     }
 
+    // Set new positions (visibles) given hidden, according to normal distribution
     for (int i=0; i<M; i++){
         sum2 = 0;
         for (int j=0; j<N; j++){
@@ -165,8 +168,8 @@ void System::runMetropolisSteps(string method, int numberOfMetropolisSteps, vect
     bool acceptedStep;
     // Sample after equilibrium have been reached
     for (int i=0; i<numberOfMetropolisSteps; i++) {
-        if (method == "MetropolisBruteForce") acceptedStep = metropolisStep(GibbsValue, X, H, a, b, w);  // Standard Metropolis sampling
-        if (method == "MetropolisImportance") acceptedStep = metropolisStepImportance(GibbsValue, X, H, a, b, w);  // Importance sampling
+        if (method == "Metropolis") acceptedStep = metropolisStep(GibbsValue, X, H, a, b, w);  // Standard Metropolis sampling
+        if (method == "Importance") acceptedStep = metropolisStepImportance(GibbsValue, X, H, a, b, w);  // Importance sampling
         if (method == "Gibbs") acceptedStep = GibbsSampling(X, H, a, b, w);  // Gibbs Sampling
 
         // Sample the energy and write to file
@@ -204,7 +207,7 @@ void System::updateDistanceMatrix(vector<double> m_X, int randparticle)
 vector<vector<double>> System::computematrixdistance(vector<double>& m_X)
 {
     vector<vector<double>> distancematrix(m_numberOfParticles, vector<double>(m_numberOfParticles));
-    double temp = 0;
+    double temp;
     int j = 0;
     int z;
     int k = 0;
@@ -286,15 +289,6 @@ vector<double> System::GradientParameters(double GibbsValue, vector<double> X, v
     return GradientPsi;
 }
 
-double System::findEnergyDerivative()
-{
-    double meanEnergy      = getSampler()->getCumulativeEnergy()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
-    double meanWFderiv     = getSampler()->getCumulativeWFderiv()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
-    double meanWFderivEloc = getSampler()->getCumulativeWFderivMultEloc()/(m_numberOfMetropolisSteps*getEquilibrationFraction());
-
-    return 2*(meanWFderivEloc - meanEnergy*meanWFderiv);
-}
-
 int System::computeIndex(int index)
 {
     int init = index;
@@ -329,18 +323,18 @@ void System::openFile(string filename)
 
     myFile << "Energy  " <<  "St. dev  ";
     for( int i = 0; i < m_numberOfVisibleNodes; i++){
-        myFile<<"a[" << i << "] " ;
+        myFile<<"a[" << i << "] ";
     }
 
     for(int i = 0; i < m_numberOfHiddenNodes; i++){
-        myFile<<"b[" << i << "] " ;
+        myFile<<"b[" << i << "] ";
     }
 
     int z = m_numberOfVisibleNodes + m_numberOfHiddenNodes;
     for (int i = 0; i < m_numberOfVisibleNodes; i++){
         for (int j = 0; j < m_numberOfHiddenNodes; j++){
             z++;
-            myFile<<"w[" << i << "]["<< j << "] " ;
+            myFile<<"w[" << i << "][" << j << "] ";
         }
     }
     myFile << endl;
@@ -348,23 +342,24 @@ void System::openFile(string filename)
 
 void System::writeToFile(vector<double> X, vector<double>& a, vector<double>& b, vector<vector<double>>& w)
 {
-    double energy = getSampler()->getEnergy();
-    int MC = getNumberOfMetropolisSteps();
-    double ef = getEquilibrationFraction();
-    double MC_eq = MC - ef*MC;
+    double  energy  = getSampler()->getEnergy();
+    int     MC      = getNumberOfMetropolisSteps();
+    double  ef      = getEquilibrationFraction();
+    double  MC_eq   = MC - ef*MC;
+
     myFile  << energy << "  " << sqrt(getSampler()->getCumulativeEnergySquared() - energy*energy)/sqrt(MC_eq)  << "  ";
 
     for( int i = 0; i < m_numberOfVisibleNodes; i++){
-        myFile << a[i]<<"  " ;
+        myFile << a[i] << "  ";
     }
 
     for(int i = 0; i < m_numberOfHiddenNodes; i++){
-        myFile << b[i]<<"  " ;
+        myFile << b[i] << "  ";
     }
 
     for (int i = 0; i < m_numberOfVisibleNodes; i++){
         for (int j = 0; j < m_numberOfHiddenNodes; j++){
-            myFile<< w[i][j]<<"  " ;
+            myFile << w[i][j] << "  ";
         }
     }
     myFile << endl;
@@ -548,7 +543,7 @@ void System::setDistanceMatrix(const vector<vector<double> > &distanceMatrix)
     m_distanceMatrix = distanceMatrix;
 }
 
-vector<vector<double> > System::getDistanceMatrix() const
+vector<vector<double>> System::getDistanceMatrix() const
 {
     return m_distanceMatrix;
 }
