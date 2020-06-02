@@ -34,9 +34,9 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 %\usepackage[showframe]{geometry}
 %\usepackage{layout}
 \setlength{\hoffset}{-0.7in}  % Length left
-\setlength{\voffset}{-0.7in}  % Length on top
+\setlength{\voffset}{-0.8in}  % Length on top
 \setlength{\textwidth}{480pt}  % Width /597pt
-\setlength{\textheight}{665pt}  % Height /845pt
+\setlength{\textheight}{675pt}  % Height /845pt
 %\setlength{\footskip}{25pt}
 
 \newcommand{\VEV}[1]{\langle#1\rangle}
@@ -47,39 +47,39 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 \begin{document}%\layout
 \maketitle
 \begin{abstract}
-In this project we study fermions in a harmonic oscillator potential using a restricted Boltzmann machine (RBM) to approximate the wave function as a neural network quantum state (NQS) combined with a variational Monte Carlo (VMC) method. To compute the ground state of the system, a stochastic gradient descent (SGD) method was used, and to do a statistical analysis of the results we use blocking. The computation of the system is tested with three sampling methods; a standard brute-force Metropolis method, Importance sampling and Gibbs sampling.
+In this project we study fermions in a harmonic oscillator potential using a restricted Boltzmann machine (RBM) to approximate the wave function as a neural network quantum state (NQS) combined with a variational Monte Carlo (VMC) method. To compute the ground state of the system, a stochastic gradient descent (SGD) method is used, and to do a statistical analysis of the results we use blocking. The computation of the system is tested with three sampling methods; a standard brute-force Metropolis method, Importance sampling and Gibbs sampling.
 
-The computed energies in atomic units (a.u.) are benchmarked against analytical ground state energies for systems of one and two electrons in one and two dimensions with and without interaction. The computed results are found a strongly dependent on the initial guesses of the variational/RBM parameters of the system, together with the sampling and learning rate parameters. For the non-interacting case the Gibbs method is found to give the best solutions with the best errors for $\sigma=0.7$ and $\eta=0.2$, but all three sampling methods produce good energies with the found best parameters. For interaction the Importance sampling is found to give the best energies and errors for two electrons in 2D. In this case the Gibbs sampling provide too high energies, leading to a conclusion of some numerical error with this sampling method.
+The computed energies in atomic units (a.u.) are benchmarked against analytical ground state energies for systems of one and two electrons in one and two dimensions with and without interaction. The computed results are found to have a strong dependence on the initial guesses of the variational/RBM parameters of the system, together with the sampling and learning rate parameters. For the non-interacting case the Gibbs method is found to give the best solutions with the best errors after we have found the best parameters, but all three sampling methods produce good energies in this case. For interaction the Importance sampling is found to give the best energies and errors for two electrons in 2D. 
 \end{abstract}
 
 
 \section{Introduction}
 \label{sect:Introduction}
-Machine learning is a more and more used method in physics to simulate and study quantum systems. One of the categorizations in machine learning where we consider the desired output of a system, is Neural Networks and Boltzmann machines. Boltzmann machines are a type of unsupervised learning method. One application is to represent a wave function with a restricted Boltzmann machine (RBM). Such a wave function/network is named a neural network quantum state (NQS) after \citet{carleo2017solving}, which used this on quantum mechanical spin lattice systems of the Ising model and Heisenberg mode.
+Machine learning is a more and more used method in physics to simulate and study quantum systems. One of the categorizations in machine learning where we consider the desired output of a system, is Neural Networks (NN) and Boltzmann machines. Boltzmann machines are a type of unsupervised learning method. One application is to represent a wave function with a restricted Boltzmann machine (RBM). Such a wave function/network is named a neural network quantum state (NQS) after \citet{carleo2017solving}, which used this on quantum mechanical spin lattice systems of the Ising model and Heisenberg mode.
 
-In this project we will test the applicability of the RBM's to quantum mechanics on a system with two interacting electrons confined to move in a harmonic oscillator trap. With two electrons we can exclude Pauli's exclusion principle, which states that no more than two fermions can occupy the same quantum state simultaneously, and the Slater determinant. The system will be studied in one and two dimensions for one and two particles in a quantum dot with different number of hidden nodes for non-interacting particles. Here, we can derive the ground state energy analytically. For the interacting case we only study two electrons in a quantum dot in two dimensions with various number of hidden nodes. In this case, we will compare our computed energies with analytical ground state energies from \citet{taut1993two}.
+In this project we will test the applicability of the RBM's to quantum mechanics on a system with electrons confined to move in a harmonic oscillator trap. The system will be studied in one and two dimensions for one and two particles with different number of hidden nodes for non-interacting particles. Here, we can derive the ground state energy analytically. For the interacting case we only study two electrons in a quantum dot in two dimensions with various number of hidden nodes. In this case, we will compare our computed energies with analytical ground state energies from \citet{taut1993two}.
 
-To do the ground state energy calculation, we will use Variational Monte Carlo (VMC) methods with three different sampling methods: a standard "brute force" Metropolis sampling, an improved Metropolis-Hastings/Importance sampling and Gibbs sampling. We will use a Gaussian-Binary RBM as the neural networks (NN) with visible and hidden nodes to represent the wave function. The weights of these nodes are what we will use as variational parameters to approximate the ground state. We also use a Stochastic Gradient Descent (SGD) with a fixed learning rate to find the parameters that minimize the energy function. Then we do a statistical error analysis on the ground state energies by using the blocking method.
+To do the ground state energy calculation, we will use Variational Monte Carlo (VMC) methods with three different sampling methods: a standard "brute-force" Metropolis sampling, an improved Metropolis-Hastings/Importance sampling and Gibbs sampling. We will use a Gaussian-Binary RBM as the neural networks (NN) with visible and hidden nodes to represent the wave function. The weights of these nodes are what we will use as variational parameters to approximate the ground state. We also use a Stochastic Gradient Descent (SGD) with a fixed learning rate to find the parameters that minimize the energy function. Then we do a statistical error analysis on the ground state energies by using the blocking method.
 
-For the layout of this project, we first take a look at the theory of the physics and the numerics we will use in this project. Here get an overview of the physical system, neural networks, restricted Boltzmann machine, the analytical derivations of the ground state energies and then the theory of the numerical methods we are using. In the methods section, we explain what we do with the implementation of the numerical tools we use and the parameters we use for running the code. Here we will use the three sampling methods we have mentioned to sample the ground state energies for varying parameters and cases. The computed energies, with a statistical analysis applied, will be benchmarked against the analytically derived ground state energies to see how well our sampling methods can compare with the analytical results. In the results section, we present and discuss the results we get from the VMC computation. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
+For the layout of this project, we first take a look at the theory of the physics and the numerics we will use in this project. Here get an overview of the physical system, neural networks, restricted Boltzmann machine, the analytical derivations of the ground state energies and then the theory of the numerical methods we are using. In the methods section, we explain what we do with the implementation of the numerical tools we use and the parameters we use for running the code. Here we will use the three sampling methods we have mentioned to sample the ground state energies for varying parameters and various cases. The computed energies, with a statistical analysis, will be benchmarked against the analytically derived ground state energies to see how well our sampling methods can compare with the analytical results. In the results section, we present and discuss the results we get from the VMC computation. Lastly, we come up with a conclusion to the project with possible aspects towards future work.
 
 
 \section{Theory}
 \label{sect:Theory}
 \subsection{The System}
 \label{subsect:System}
-We will consider a system of $N_p=2$ electrons as function of the oscillator frequency $\omega$, confined in a pure 2D isotropic harmonic oscillator. This system is considered as a quantum dot with frequency $\hbar\omega=1$. For this system we have exact closed form expressions for the ground state energy from \citet{taut1993two} for selected values for $\omega$ to use as benchmarks. The total Hamiltonian, with natural units ($\hbar=c=e=m_e=1$), of this system is given as 
+We will consider a system of $N_p=2$ electrons as function of the oscillator frequency $\omega$, confined in a pure 2D isotropic harmonic oscillator. With two electrons we can exclude Pauli's exclusion principle, which states that no more than two fermions can occupy the same quantum state simultaneously, and the Slater determinant. This system is considered as a quantum dot with frequency $\hbar\omega=1$. For this system we have exact closed form expressions for the ground state energy from \citet{taut1993two} for selected values for $\omega$ to use as benchmarks. The total Hamiltonian, with natural units ($\hbar=c=e=m_e=1$), of this system is given as 
 \begin{equation}
 \label{eq:Hamlitonian}
 \hat{H}=\hat{H}_0+\hat{H}_1=\sum_{i=1}^{N_p}\left(-\frac{1}{2}\nabla^2_i + \frac{1}{2}\omega^2r_i^2\right) + \sum_{i<j}\frac{1}{r_{ij}}.
 \end{equation}
-Here $\hat{H}_0$ is the standard harmonic oscillator part, which is the Hamiltonian we will use without interaction between the electrons, and $\hat{H}_1$ is the repulsive interaction is given by the Coulomb potential. The energies are in atomic units (a.u.), while the modulus of the position for an electron $i$ is $r_i=\sqrt{r^2_{i_x}+r^2_{i_y}}$ and the distance between the electrons are given as $r_{ij}=|\textbf{r}_i-\textbf{r}_j|$.
+Here $\hat{H}_0$ is the standard harmonic oscillator part, which is the Hamiltonian we will use without interaction between the electrons, and $\hat{H}_1$ is the repulsive interaction given by the Coulomb potential. The energies are in atomic units (a.u.), while the modulus of the position for an electron $i$ is $r_i=\sqrt{r^2_{i_x}+r^2_{i_y}}$ and the distance between the electrons are given as $r_{ij}=|\textbf{r}_i-\textbf{r}_j|$.
 
 \subsection{Neural Networks (NN)}
 \label{subsect:NN}
-Much of the differences between this project and the first is that we now look at fermions and that we want to use machine learning and neural networks to represent the wave function. We are still using a variation of the variational Monte Carlo (VMC) calculation to do the simulation.
+The main the differences between this project and the first is that we now look at fermions and that we want to use machine learning and neural networks to represent the wave function. We are still using a variation of the variational Monte Carlo (VMC) calculation to do the simulation.
 
-Neural networks are computational models that are supposed to mimic biological systems, and they consist of layers of nodes that are connected. Neural networks can solve a various of problems like supervised, unsupervised and reinforcement learning. Neural networks have commonly, as seen in Figure \ref{fig:Neural_network}, an input/visible layer, a hidden layer and an output layer. This is a simple case with two input variables/nodes, one hidden layer with 4 nodes and one node in the output layer. This is called a feed-forward neural network (FFNN), since the information only moves in one direction. Neural networks can contain many hidden layers, and the number of nodes in each layer have to be decided by us and may vary from layer to layer. The input and output layers contain as many nodes as there are input and output variables respectively. The number of output variables vary depending on the problem and may differ from the number of input variables. From the figure we see that the input variables are sent to the hidden layer nodes where they are processed with an activation function before sent to the output layer. The connection between the nodes are affected by weight variables \textbf{W}, which gives weighted sums to be passed through an activation function. The outputted weighted sum have to pass a certain threshold to not give zero output. The visible and hidden nodes are usually affected by biases respectively as well. In neural networks a training process is normally used to find the optimal biases and weights that minimize a chosen cost function. Neural Networks have many other aspects which we will not cover in this project, since they are not used.
+Neural networks are computational models that are supposed to mimic biological systems, and they consist of layers of nodes that are connected. Neural networks can solve a various of problems like supervised, unsupervised and reinforcement learning. Neural networks have commonly, as seen in Figure \ref{fig:Neural_network}, an input/visible layer, a hidden layer and an output layer. This is a simple case with two input variables/nodes, one hidden layer with four nodes and one node in the output layer. This is called a feed-forward neural network (FFNN), since the information only moves in one direction. Neural networks can contain many hidden layers, and the number of nodes in each layer have to be decided by us and may vary from layer to layer. The input and output layers contain as many nodes as there are input and output variables respectively. The number of output variables vary depending on the problem and may differ from the number of input variables. From the figure we see that the input variables are sent to the hidden layer nodes where they are processed with an activation function before sent to the output layer. The connection between the nodes in the different layers are affected by weight variables \textbf{W}, which gives weighted sums to be passed through an activation function. The outputted weighted sum have to pass a certain threshold to not give zero output. The visible and hidden nodes are usually affected by biases respectively as well. In neural networks a training process is normally used to find the optimal biases and weights that minimize a chosen cost function. Neural Networks have many other aspects which we will not cover in this project, since they are not used.
 
 \begin{figure}[htbp]
 	\centering\includegraphics[width=0.3\linewidth]{Neural_network.png}
@@ -88,23 +88,23 @@ Neural networks are computational models that are supposed to mimic biological s
 
 \subsection{Restricted Boltzmann Machine (RBM)}
 \label{subsect:RBM}
-We will use a restricted Boltzmann machine as our neural network of choice for this project. This type of NN consists of one layer with input/visible nodes and one layer consisting of hidden nodes (similar to Figure \ref{fig:Neural_network}). The visible and hidden nodes are also affected by separate biases and weights. There is only a connection between a visible and a hidden node, meaning that there are no connections between nodes in the same layer. With the RBM (generated) network, we want to learn or produce a probability distribution of the simulated system which then is used to generate an output. In this case the wave function $\Psi$ is the probability distribution, and the generated output is positions of the electrons. Here the cost function is given by the gradient of the expectation value of the energy of the wave function with respect to the parameters $\alpha=[\textbf{a}, \textbf{b}, \textbf{W}]$. Minimization of this will lead to the ground state of the system. This gradient will be used in the stochastic gradient descent method, which is explained more later.
+We will use a restricted Boltzmann machine as our neural network of choice for this project. This type of NN consists of one layer with input/visible nodes and one layer consisting of hidden nodes (similar to Figure \ref{fig:Neural_network}). The visible and hidden nodes are also affected by separate biases and weights. There is only a connection between a visible and a hidden node, meaning that there are no connections between nodes in the same layer. With the RBM (generated) network, we want to learn or produce a probability distribution of the simulated system which then is used to generate an output. In this case the wave function $\Psi$ is the probability distribution, and the generated output is the positions of the electrons. Here the cost function is given by the gradient of the expectation value of the energy of the wave function with respect to the parameters $\alpha=[\textbf{a}, \textbf{b}, \textbf{W}]$. This minimization will lead to the ground state of the system. This gradient will be used in the stochastic gradient descent method, which is explained more later (sect. \ref{subsect:Gradient}).
 
-The RBM network is classified as a reinforcement learning under unsupervised learning in neural networks. This is because we are not using training data, but use the quantum variational principle where the neural network quantum state (NQS) wave function is used to represent the ground state after the quantum mechanical energy is minimized with respect to the parameters \textbf{a}, \textbf{b} and \textbf{W}. This is then used to optimize the weights and biases of the network. 
+The RBM network is classified as reinforcement learning under unsupervised learning in neural networks. This is because we are not using training data, but use the quantum variational principle where the neural network quantum state (NQS) wave function is used to represent the ground state after the quantum mechanical energy is minimized with respect to the parameters \textbf{a}, \textbf{b} and \textbf{W}. This is then used to optimize the weights and biases of the network. 
 
 For the RBM we only have the joint probability distribution between the visible and hidden nodes:
 \begin{equation}
 \label{eq:F_rbm}
 F_{rbm}(\textbf{X}, \textbf{H})=\frac{1}{Z}e^{-\frac{1}{T_0}E(\textbf{X},\textbf{H})}
 \end{equation}
-\textbf{X} is the visible nodes, which in this case is the output of the system (particle positions), \textbf{H} is the hidden nodes and $Z$ is the partition function or a normalization constant:
+\textbf{X} is the visible nodes, which in this case is the output of the system (particle positions), \textbf{H} is the hidden nodes and $Z$ is the partition function and is a normalization constant:
 \begin{equation}
 \label{eq:norm_const}
 Z=\int\int \frac{1}{Z}e^{-\frac{1}{T_0}E(\textbf{x},\textbf{h})}d\textbf{x}d\textbf{h}
 \end{equation}
-For simplicity, we will just ignore $T_0$ by setting it to one. $E$ in equation \ref{eq:F_rbm} and \ref{eq:norm_const}, is an energy function describing the relations between the visible and hidden nodes called the energy of the node configuration. The choice of energy function will determine what kind of RBM version we are using. 
+For simplicity, we will just ignore $T_0$ by setting it to one. $E$ in equation \ref{eq:F_rbm} and \ref{eq:norm_const}, is an energy function describing the relations between the visible and hidden nodes called the energy of the node configuration. Not to be confused with the local energy of the system. The choice of energy function will determine what kind of RBM version we are using. 
 
-For a case where both the visible and hidden nodes only takes on binary values, the most common version of the RMB is used, which is called "binary-binary". For our case with fermions, we want continuous values for the particle positions (visible nodes). So we will use an energy function for the RBM called the "Gaussian-binary":
+For a case where both the visible and hidden nodes only takes on binary values, the most common version of the RMB is used, which is called "Binary-Binary". For our case with fermions, we want continuous values for the particle positions (visible nodes). So we will use an energy function for the RBM called the "Gaussian-Binary":
 \begin{equation}
 \label{eq:Gaussian_binary}
 E(\textbf{X},\textbf{H})=\sum_{i}^{M}\frac{(X_i-a_i)^2}{2\sigma_i^2} - \sum_{j}^{N}b_jH_j - \sum_{i,j}^{M,N}\frac{X_iw_{ij}H_j}{\sigma_i^2}
@@ -114,7 +114,7 @@ If $\sigma_i=\sigma$:
 \label{eq:Gaussian_binary2}
 E(\textbf{X},\textbf{H})=\frac{||\textbf{X}-\textbf{a}||^2}{2\sigma^2} - \textbf{b}^T\textbf{H} - \frac{\textbf{X}^T\textbf{W}\textbf{H}}{\sigma^2}
 \end{equation}
-\textbf{X} is a vector containing the visible nodes with length $M$, \textbf{a} is a vector containing the visible biases with length $M$, \textbf{H} is a vector containing the hidden nodes with length $N$, \textbf{b} is a vector containing the hidden biases with length $N$ and \textbf{W} is a weight matrix containing the weights characterizing the connection of each visible node to a hidden node of size $M\times N$. We have the number of visible nodes $M=P\cdot D$, where $P$ is the number of particles and $D$ is the number of dimensions. For the number of hidden nodes $N$, we will choose and experiment with. The RBM parameters \textbf{a}, \textbf{b} and \textbf{W} will act as variational parameters like in the standard VMC calculation. The total number of parameters will then be $M+N+M\cdot N$, from the dimensions of the variational parameters.
+\textbf{X} is a vector containing the visible nodes with length $M$, \textbf{a} is a vector containing the visible biases with length $M$, \textbf{H} is a vector containing the hidden nodes with length $N$, \textbf{b} is a vector containing the hidden biases with length $N$ and \textbf{W} is a weight matrix containing the weights characterizing the connection of each visible node to a hidden node of size $M\times N$. We have the number of visible nodes $M=P\cdot D$, where $P$ is the number of particles and $D$ is the number of dimensions. For the number of hidden nodes $N$, we will choose and experiment with. The RBM parameters \textbf{a}, \textbf{b} and \textbf{W} will act as variational parameters like in the standard VMC calculation. The total number of parameters will then be $M+N+M\cdot N$, from the dimensions of the RBM parameters.
 
 To represent the wave function we will use the marginal probability distribution function (PDF) by summing over the hidden nodes, changing $F_{rbm}(\textbf{X}, \textbf{H})$ in equation \ref{eq:F_rbm} to 
 \begin{equation}
@@ -128,13 +128,13 @@ Using the Gaussian-Binary RBM, the wave function becomes:
 &=e^{-\sum_{i}^{M}\frac{(X_i-a_i)^2}{2\sigma^2}}\prod_{j}^{N}\left(1+e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}
 \right)
 \end{align}
-The partition function will not affect the result in any way, that is why we will ignore the partition function by setting $Z=1$ as we did with $T_0$.
+The partition function will not affect the result in any way, which is why we will ignore the partition function by setting $Z=1$ as we did with $T_0$.
 
 \subsection{Local Energy and Analytical Expressions}
 \label{subsect:E_L}
 \subsubsection{Evaluation of Local Energy}
 \label{subsubsect:eval E_L}
-To find the ground state energy of the fermions, we have from the variational principle that the exact energy have to be smaller or equal to the expectation value of the local energy as a function of the variational parameters $\alpha=[\textbf{a}, \textbf{b}, \textbf{W}]$ given a trial wave function (eq. \ref{eq:wave_func}), $E_{exact}\leq \langle E_L \rangle$. The expectation value of the energy with a trial wave function $\Psi_T$ is computed as
+To find the ground state energy of the fermions, we have from the variational principle that the exact energy have to be smaller or equal to the expectation value of the local energy as a function of the variational parameters $\alpha=[\textbf{a}, \textbf{b}, \textbf{W}]$ given a trial wave function (eq. \ref{eq:wave_func}), $E_{exact}\leq \langle E_L \rangle$. The expectation value of the energy with a trial wave function $\Psi_T$ and the Hamiltonian is computed as
 \begin{equation}
 \label{eq:expec_E}
 \langle E\rangle=\langle H\rangle=\frac{\int \Psi_T^*(\textbf{X}, \alpha)\hat{H}\Psi_T(\textbf{X}, \alpha)d\textbf{X}}
@@ -167,7 +167,7 @@ By looking at this expression we can also represent the local energy in terms of
 \label{eq:EL_kin_pot_int}
 E_L=\sum_{k=1}^{M}(E_k^{kin}+E_k^{pot}) + \sum_{i<j}E_{ij}^{int}
 \end{equation}
-The potential and interaction energies are pretty straight forward to implement numerically. For the kinetic energy we have to compute $\nabla^2\Psi$ analytically first. The derivation of the kinetic energy is done in Appendix \ref{appendix:E_k}. The derivation in this appendix gives the full local energy expression:
+The potential and interaction energies are pretty straight forward to implement numerically. For the kinetic energy we have to compute $\nabla^2\Psi$ analytically first. The derivation of the kinetic energy is done in Appendix \ref{appendix:E_k}. The derivation in this appendix gives the full local energy expression with the potential and interaction energies included last:
 \begin{align}
 \label{eq:Full_energy}
 E_L&= -\frac{M}{\sigma^2} +\sum_{i}^{M}\sum_{j}^{N}\Sigma(u_j)\cdot\Sigma(-u_j)\cdot\frac{w_{ij}^2}{\sigma^4} +\sum_{i}^{M}\frac{X_i-a_i}{\sigma^2}\nonumber\\ 
@@ -187,7 +187,7 @@ E_L&=-\frac{M}{2\sigma^2} +\frac{1}{2}\sum_{i}^{M}\sum_{j}^{N}\Sigma(u_j)\cdot\S
 +\frac{1}{4}\sum_{i}^{M}\sum_{j}^{N}(\Sigma(u_j))^2\cdot\frac{w_{ij}^2}{\sigma^4}\nonumber\\
 &\quad +\frac{1}{2}\sum_{k=1}^{M}\omega^2X_k^2 + \sum_{i<j}\frac{1}{X_{ij}}
 \end{align}
-This new change in the local energy can easily be coded. We clearly see that the only difference in equation \ref{eq:Full_energy} and \ref{eq:Full_energy_Gibbs} is that the Gibbs local energy has some $\frac{1}{2}$ factors where the other would have a factor of 1. So we only have take into account the half-factors when using the Gibbs sampling in comparison to the other sampling methods.
+This new change in the local energy can easily be coded. We clearly see that the only difference in equation \ref{eq:Full_energy} and \ref{eq:Full_energy_Gibbs} is that the Gibbs local energy has some $\frac{1}{2}$ factors where the other would have a factor of 1. So we only have take into account the half-factors when using the Gibbs sampling in comparison to the other sampling methods numerically.
 
 \subsubsection{Benchmark Ground State Energies}
 \label{subsubsect:Analytical E_L}
@@ -253,7 +253,7 @@ To find this $\tau$ factor, we will use what is called a blocking method, which 
 \label{sect:Num_algos}
 \subsection{Variational Monte Carlo}
 \label{subsect:VMC}
-To do the numerics in this project we will use a well known numerical method called variational Monte Carl (VMC). The good thing about this method is that we do not need to deal with differential equations which usually are difficult to handle. Instead we use statistical simulation to describe the system. This method uses random sampling of probability distributions through usually a large number of steps to achieve a solution. This type of Monte Carlo simulation needs some sampling technique combined with an algorithm for accepting or declining a proposed move towards the most probable result. In this project we will apply a three sampling variants; the Metropolis algorithm, the Importance sampling algorithm and the Gibbs sampling algorithm.
+To do the numerics in this project we will use a well known numerical method called variational Monte Carl (VMC). The good thing about this method is that we do not need to deal with differential equations which usually are difficult to handle. Instead we use statistical simulation to describe the system. This method uses random sampling of probability distributions through usually a large number of steps to achieve a solution. This type of Monte Carlo simulation needs some sampling technique combined with an algorithm for accepting or declining a proposed move towards the most probable result. In this project we will apply three sampling variants; the Metropolis algorithm, the Importance sampling algorithm and the Gibbs sampling algorithm.
 
 Most quantum systems are many-body problems with a large amount of particles. For such systems, it is often too difficult to obtain exact solutions. That is why the quantum Monte Carlo method is very good for simulating such systems, since we can compute different expectation values like the ground state energy. It is this quantity we will focus on in this project for a system of $N_p$ particles up till two dimensions. We will utilize the variational principle (like in section \ref{subsect:E_L}) that the expectation value of the Hamiltonian will be an upper bound to the ground state energy $E_0$ of the system as:
 \begin{equation}
@@ -262,9 +262,10 @@ E_0\leq \langle H\rangle=\frac{\int\Psi_T^*\hat{H}\Psi_Td\textbf{X}}{\int\Psi_T^
 \end{equation}
 
 The MC integration is used to avoid the multi-dimensional integral of a expectation value by approximating it to a sum over the number of MC cycles
-\begin{equation*}
+\begin{equation}
+\label{eq:EL_expect_var}
 E_{exact}\leq\langle E_L \rangle=\int P(\textbf{X}, \alpha)E_L(\textbf{X}, \alpha)d\textbf{X}\approx \frac{1}{MC}\sum_{i=1}^{MC}E_L(X_i, \alpha),
-\end{equation*}
+\end{equation}
 with the same PDF as earlier. From the law of large numbers we would then expect as $MC\rightarrow\infty$, the above approximation should become exact. 
 
 This VMC scheme will first initialize the trial wave function $\Psi_T(\textbf{X},\alpha)$, which is dependent on the variational (RBM) parameters $\alpha=[\textbf{a},\textbf{b},\textbf{W}]$ that we want as close as possible to the optimal parameters. Then we initialize the position of the particles for given $\alpha$, the energy and variance. For a given number of MC cycles we start the MC simulation:
@@ -365,7 +366,7 @@ for the positions/visible units which follows a normal distribution, and
 \label{eq:prob_hidden}
 P(h_j=1|\textbf{X})=\frac{1}{1+e^{-b_j -\sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}
 \end{equation}
-for the hidden nodes which follows a logistic sigmoid function. These two probabilities can be seen as activation functions in the neural network, since they only give accept or not. 
+for the hidden nodes which follows a logistic sigmoid function. These two probabilities can be seen as activation functions in the neural network, since they only accept or not. 
 
 \subsection{Gradient Descent Method}
 \label{subsect:Gradient}
@@ -415,17 +416,17 @@ The main computation of the ground state energies in this project is done in C++
 
 The SGD method is applied many times iteratively in the VMC method to ensure that the set of randomly initiated $\alpha$ gives a lower energy. The final result should then be a good estimate to the ground state energy. After $N_{SGD}$ number of SGD cycles of smaller MC runs (for saving time), we do a final set of the final parameters for a larger number of MC cycles. The local energy for each SGD cycle, together with the standard deviation and the values of the RBM parameters, are exported to data files and used for plotting. The final run exports the local energy for each MC cycles to a separate data file to be used for statistical analysis (blocking). 
 
-This works well with non-interacting electrons which gives converges to a energy with a small fluctuation. For interacting electrons, we do not separate the final run for the final local energy. Here we use all the SGD cycle data to perform a linear fit to the local energies after equilibrium. This mean energy is then used as the final result with a statistical analysis.
+This works well with non-interacting electrons which gives converges to an energy with a small fluctuation. For interacting electrons, we do not separate the final run for the final local energy. Here we use all the SGD cycle data to perform a linear fit to the local energies after equilibrium. This mean energy is then used as the final result with a statistical analysis.
 
 \subsection{Non-Interacting Electrons}
 \label{subsect:Method_nonint}
 \subsubsection{Metropolis Sampling}
 \label{subsubsect:Method_Nonint_Metropolis}
-Start by implementing the standard Metropolis algorithm (sect \ref{subsubsect:brute_Metropolis}) in the VMC program. Now we will study the ground state energy of one electron in 1D with two hidden nodes. First we must find the optimal step length $L$ which gives the best compromise between acceptance rate and how fast we reach equilibrium. Test $L=[0.01,0.1,0.5,1.0,2.0]$ with learning rate $\eta=0.1$, $\omega=1$, $N_{SGD}=100$, $N_{MC}=1e5$, $N_{MC,final}=1.5e6$ and $\sigma=1.0$. To find the best step length, we plot the local energy for each step length as a function of the number of SGD cycles to see equilibrium time, and we look at the acceptance rate after the final run. With the optimal $L$ we test different learning rates $\eta=[0.01,0.05,0.1,0.2,0.5,0.6]$. Then we plot the local energy for each learning rate as a function of the number of SGD cycles to find the optimal $\eta$ value. With the optimal $L$ and $\eta$, we use $N_{SGD}=150$ and vary the number of particles $N_P=[1,2]$, dimensions $D=[1,2]$ and hidden nodes to see how the final local energy changes. With the final energy for each case, we do a statistical analysis with blocking which we will use to compare with the benchmarked energy (eq. \ref{eq:analytic_EL}) and between the sampling methods later.
+Start by implementing the standard Metropolis algorithm (sect \ref{subsubsect:brute_Metropolis}) in the VMC program. Now we will study the ground state energy of one electron in 1D with two hidden nodes. First we must find the optimal step length $L$ which gives the best compromise between acceptance rate and how fast we reach equilibrium. Test $L=[0.01,0.1,0.5,1.0,2.0]$ with learning rate $\eta=0.1$, $\omega=1$, $N_{SGD}=100$, $N_{MC}=1e5$, $N_{MC,final}=1.5e6$ and $\sigma=1.0$. To find the best step length, we plot the local energy for each step length as a function of the number of SGD cycles to see equilibrium time, and we look at the acceptance rate after the final run. With the optimal $L$ we test different learning rates $\eta=[0.01,0.05,0.1,0.2,0.5,0.6]$. Then we plot the local energy for each learning rate as a function of the number of SGD cycles to find the optimal $\eta$ value. With the optimal $L$ and $\eta$, we use $N_{SGD}=150$ and vary the number of particles $N_P=[1,2]$, dimensions $D=[1,2]$ and hidden nodes $N_H=[1,2,3,4]$ to see how the final local energy changes. With the final energy for each case, we do a statistical analysis with blocking which we will use to compare with the benchmarked energy (eq. \ref{eq:analytic_EL}) and between the sampling methods later.
 
 \subsubsection{Importance Sampling}
 \label{subsubsect:Method_Nonint_Importance}
-Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) into the VMC method. With this sampling method we will do the same analysis on the same system as for the standard Metropolis, except that we first test various time steps $\Delta t$ instead of step lengths. We use the same other parameters when testing $\Delta t=[0.001,0.01,0.05,0.1,0.5,1.0,2.0]$ as for testing $L$. We plot the local energy as we did earlier, and use the optimal $\Delta t$ to test the same learning rates. This is also plotted as before to find the best $\eta$. With the two optimal parameters, we vary the number of particles, dimensions and hidden nodes as earlier to get the ground state energy with a statistical analysis.
+Now we implement the Importance sampling algorithm (sect. \ref{subsubsect:Importance}) into the VMC method. With this sampling method we will do the same analysis on the same system as for the standard Metropolis, except that we first test various time steps $\Delta t$ instead of step lengths. We use the same other parameters when testing $\Delta t=[0.001,0.01,0.05,0.1,0.5,1.0,2.0]$ as for testing $L$. We plot the local energy as we did earlier, and use the optimal $\Delta t$ to test the same learning rates. This is also plotted as before to find the best $\eta$ parameter for this sampling method. With the two optimal parameters, we vary the number of particles, dimensions and hidden nodes as earlier to get the ground state energy with a statistical analysis.
 
 \subsubsection{Gibbs sampling}
 \label{subsubsect:Method_Nonint_Gibbs}
@@ -442,12 +443,12 @@ With the respective optimal $\eta$-values for the sampling methods, we experimen
 
 \section{Results}
 \label{sect:Results}
-All the figures produced in this project can be found in the Figures folder at the GitHub-repository \cite{GitHub}.
+All the figures produced in this project can be found in the Figures folder at the GitHub-repository \cite{GitHub}. The produced data files can be found in the Data folder at the same repository.
 \subsection{Non-Interacting Electrons}
 \label{subsect:Results_nonint}
 \subsubsection{Metropolis Sampling}
 \label{subsubsect:Results_nonint_Metropolis}
-The first thing we have to test is how the local energy as a function of the SGD cycles behaves as we vary the step length $L$ of the Metropolis sampling in the VMC. The parameters we use is described in the Methods section \ref{subsubsect:Method_Nonint_Metropolis}. This is seen in Figure \ref{fig:check_L}. There we see that when $L\geq0.5$, we get very stable curves for the local energy and they all converge towards the analytically calculated ground state energy of $E_L=0.5$ (in this case). From this we can conclude that the step length should be $L\geq0.5$. At the GitHub Figures folder there is also a plot for $L=0.01$, but this gave such a bad solution and did not converge very well that we did not include it here. To find the best step length, we also look at the acceptance rate we get in Table \ref{tab:Met_A}. There we see that the smaller the step length is, the better is the acceptance rate. What we want with the step length is that the solution reaches equilibrium as fast as possible, with a high as possible acceptance rate. So we want a compromise between a high acceptance rate and a fast equilibrium of the solution. This seems to be good when we use $L=0.5$, since the acceptance rate is very good, $A=0.935$ and the equilibrium is reached quite fast around 20 SGD cycles.
+The first thing we have to test is how the local energy as a function of the SGD cycles behaves as we vary the step length $L$ of the Metropolis sampling in the VMC. The parameters we use is described in the Methods section \ref{subsubsect:Method_Nonint_Metropolis}. This is seen in Figure \ref{fig:check_L}. There we see that when $L\geq0.5$, we get very stable curves for the local energy and they all converge towards the analytically calculated ground state energy of $E_L=0.5$ (in this case). From this we can conclude that the step length should be $L\geq0.5$. At the GitHub Figures folder there is also a plot for $L=0.01$, but this gave such a bad solution and did not converge very well that we did not include it here. To find the best step length, we also look at the acceptance rate we get in Table \ref{tab:Met_A}. There we see that the smaller the step length is, the better is the acceptance rate. What we want with the step length is that the solution reaches equilibrium as fast as possible, with as high as possible acceptance rate. So we want a compromise between a high acceptance rate and a fast equilibrium of the solution. This seems to be good when we use $L=0.5$, since the acceptance rate is very good, $A=0.935$ and the equilibrium is reached quite fast around 20 SGD cycles.
 
 \begin{figure}[htbp!]
 	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{L_01_20.png}
@@ -466,18 +467,18 @@ The first thing we have to test is how the local energy as a function of the SGD
 	\caption{Table for the acceptance rate (A) of the Metropolis sampling for various step lengths (L). See here that the smaller the step length is, the bigger and better is the acceptance rate. \label{tab:Met_A}}
 \end{table}
 
-With the chosen step length $L=0.5$, we experiment with the learning rate to see how it affects the system. In Figure \ref{fig:check_learnrate_Met} we see how the local energy behaves as a function of the SGD cycles for various learning rates. For higher learning rates we see a faster convergence time. The change in learning rate does not affect the acceptance rate of the system. When $\eta=0.01$, the solution does not converge to the analytical solution within 100 SGD cycles like the other. When $\eta>0.6$, the solution simply diverges and is not included here. So we choose $\eta=0.2$ as the learning rate parameter, since the solution converges under 20 SGD cycles and does not converge too fast.
+With the chosen step length $L=0.5$, we experiment with the learning rate to see how it affects the system. In Figure \ref{fig:check_learnrate_Met} we see how the local energy behaves as a function of the SGD cycles for various learning rates. For higher learning rates we see a faster convergence time. The change in learning rate does not affect the acceptance rate of the system. When $\eta=0.01$, the solution does not converge to the analytical solution within 100 SGD cycles like the others. When $\eta>0.6$, the solution simply diverges and is not included here. So we choose $\eta=0.2$ as the learning rate parameter, since the solution converges under 20 SGD cycles and does not converge too fast.
 
 \begin{figure}[htbp!]
 	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Met_learnrate.png}
-	\caption{Local energy as function of the SGD cycle for various learning rates with the Metropolis sampling and $L=0.5$. See here that the higher the learning rate is, the faster the solution reaches the equilibrium. \label{fig:check_learnrate_Met}}
+	\caption{Local energy as function of the SGD cycle for various learning rates with the Metropolis sampling and $L=0.5$. See here that the higher the learning rate is, the faster the solution reaches the equilibrium for these selected values of learning rates. \label{fig:check_learnrate_Met}}
 \end{figure} 
 
 \subsubsection{Importance Sampling}
 \label{subsubsect:Results_nonint_Importance}
 Then we do the same analysis with the Importance sampling instead of Metropolis. The parameters we use are described in the Methods section \ref{subsubsect:Method_Nonint_Importance}. Now we have to find the best time step parameter $\Delta t$, which satisfies the same compromise as for $L$ in Metropolis. In Figure \ref{fig:check_dt} we see how the local energy as a function of the SGD cycles behaves for various time steps. The higher $\Delta t$ is, the better is the convergence towards the exact solution. For $\Delta t\geq 0.05$, we see that the convergence of the solution becomes quite good. So we want a $\Delta t\geq0.05$. Once again we look at the acceptance rate in Table \ref{tab:Imp_A} for the different time steps to find the best time step parameter for the sampling method. When $\Delta t>0.5$ the acceptance rate is not that good. When $\Delta t<0.1$ the acceptance rate is too close to zero, meaning that we accept more or less every move such that we do not move enough towards the minimum energy of the system. By looking at the acceptance rate, $\Delta t=0.5$ seems to be the best parameter, which fits well with our conclusion from Figure \ref{fig:check_dt}.
 
-\begin{figure}[htbp!]
+\begin{figure}[t!]
 	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{dt.png}
 	\caption{Local energy as function of the SGD cycle for various Importance sampling time steps. For $\Delta t\geq0.05$ we get smooth curves and fast convergence for all parameters used. \label{fig:check_dt}}
 \end{figure}
@@ -494,6 +495,7 @@ Then we do the same analysis with the Importance sampling instead of Metropolis.
 	\caption{Table for the acceptance rate (A) of the Importance sampling for various time step ($\Delta t$). See here that the smaller the time step is, the bigger and better is the acceptance rate. \label{tab:Imp_A}}
 \end{table}
 
+\newpage
 With the chosen time step $\Delta t=0.5$, we experiment with the learning rate once again. In Figure \ref{fig:check_learnrate_Imp} we see how the local energy behaves for various learning rates. We see a similar behavior of the solution as we got with Metropolis in Figure \ref{fig:check_learnrate_Met}. The only difference seems to be that the curves with Importance sampling are much smoother than with Metropolis. Since they are so similar, we make the same conclusion for the best learning rate $\eta=0.2$.
 
 \begin{figure}[htbp!]
@@ -510,20 +512,22 @@ The last sampling method we use is the Gibbs sampling. The parameters we use are
 	\caption{Local energy as function of the SGD cycle for various Gibbs sampling sigmas. For $\sigma=[0.6, 0.7]$ we see convergence towards the analytical ground state energy. \label{fig:check_sigma}}
 \end{figure}
 
+\newpage
 With $\sigma=0.6$, we experiment with the learning rate. In Figure \ref{fig:check_learnrate_Gib} we see how the local energy behaves for various learning rates. The plots are similar to Importance sampling, except that for $\sigma\geq0.5$ the curves jump at the beginning before a fast convergence towards the exact solution. The best learning rate parameter seems to be $\eta=0.2$, as for the other sampling methods. 
 
 In Figure \ref{fig:check_learnrates_Gib} we see a comparison of the local energy with the two best learning rates for both $\sigma=0.6$ and 0.7. There we see that $\eta=0.2$ is the best learning rate for both sigmas. For the smaller sigma, we reach equilibrium faster than for the bigger. From these figures we could conclude with that $\sigma=0.6$ would be the best parameter to use with Gibbs sampling. By further testing of the local energy with these sigmas, the final local energy seems to be best when we use $\sigma=0.7$. So even though $\sigma=0.6$ reaches equilibrium the fastest, it's $\sigma=0.7$ that gives the best final energy. That is why we use $\sigma=0.7$ as the best Gibbs sampling parameter.
 
 \begin{figure}[htbp!]
-	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Gib_learnrate.png}
+	\centering\includegraphics[width=0.75\linewidth, height=0.55\linewidth]{Gib_learnrate.png}
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.6$. See here that the higher the learning rate is, the faster the solution reaches the equilibrium. Get very similar curves as for Importance sampling, except for the two biggest parameters which deviates some in the beginning. \label{fig:check_learnrate_Gib}}
 \end{figure} 
 
 \begin{figure}[htbp!]
-	\centering\includegraphics[width=0.7\linewidth, height=0.5\linewidth]{Gib_learnrate_test.png}
+	\centering\includegraphics[width=0.75\linewidth, height=0.55\linewidth]{Gib_learnrate_test.png}
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.6$ and $\sigma=0.7$. Further check for the best sigma  and learning rate parameters. \label{fig:check_learnrates_Gib}}
 \end{figure} 
 
+\newpage
 \subsubsection{Local Energy Analysis of Sampling Methods}
 \label{subsubsect:Results_nonint_Analysis}
 With all the best parameters for the three sampling methods, we will look at the final energies produced from each sampling method when we vary the number of particles ($N_P$), dimensions ($D$) and hidden nodes ($N_H$). In Table \ref{tab:Nonint_energies} we see the local energies for non-interacting electrons produced by each sampling method as described in the caption of the table. To produce these local energies we use $N_{SGD}=150$ and $\eta=0.2$ for all three sampling methods. The Metropolis step length is $L=0.5$, and the Importance time step is $\Delta t=0.5$. With these two sampling methods we also use $\sigma=1.0$, while we use $\sigma=0.7$ with Gibbs sampling.
@@ -573,53 +577,59 @@ We use the same step length $L=0.5$ that we found in the non-interacting case fo
 
 The interacting solution uses more SGD cycles to reach equilibrium than the non-interacting system. So the system needs more cycles to adapt to the interacting wave function than for a non-interacting wave function. The non-interacting Metropolis only needed around 20 SGD cycles to reach equilibrium, while the best case here needs around 300 SGD cycles to reach equilibrium.
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Int_Met_learnrate.png}
+\begin{figure}[ht!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Met_learnrate.png}
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Metropolis sampling and $L=0.5$ for two interacting electrons in 2D. The higher the learning rate is, the faster the solution converges. The energy curves are much thicker compared to non-interacting electrons in Figure \ref{fig:check_learnrate_Met}. \label{fig:check_learnrate_Int_Met}}
 \end{figure} 
 
+\newpage
 Changing the number of hidden nodes did not change much for the non-interacting system. We test now the interacting system in terms of the number of hidden nodes to see if we get any differences. In Figure 
 \ref{fig:check_hidden_Int_Met} we see the local energy when we use up till four hidden nodes in our neural network. Using one hidden node gives a much higher energy after equilibrium than the other three cases. It looks like when using a higher number of hidden nodes, the system manages to reach equilibrium in fewer SGD cycles. We will later also see that the final energies are not as alike as in the non-interacting system.
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Hidden_Int_Met.png}
+\begin{figure}[t!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Met.png}
 	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Metropolis sampling, $L=0.5$ and $\eta=0.2$ for two interacting electrons in 2D. Using one hidden node does not give as good solution as the two, three and four hidden nodes. \label{fig:check_hidden_Int_Met}}
 \end{figure} 
 
+\newpage
 \subsubsection{Importance Sampling}
 \label{subsubsect:Results_int_Importance}
 In the non-interacting case with Importance sampling when varying the learning rate, we got a much smaller spread of data points/smoother curve compared to Metropolis sampling. This is also the case in the interacting system with Importance sampling. By looking at Figure \ref{fig:check_learnrate_Int_Imp} we see that the spread of data points/thickness of the curve is much smaller than for interacting Metropolis. The form of the curves are the same for both cases. That is why we choose the same learning rate $\eta=0.2$ here as well.
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Int_Imp_learnrate.png}
+\begin{figure}[t!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Imp_learnrate.png}
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Importance sampling and $\Delta t=0.5$ for two interacting electrons in 2D. The higher the learning rate is, the faster the solution converges. The energy curves are much thinner compared to interacting Metropolis in Figure \ref{fig:check_learnrate_Int_Met}. \label{fig:check_learnrate_Int_Imp}}
-\end{figure} 
+\end{figure}
 
+\newpage
 In Figure \ref{fig:check_hidden_Int_Imp} we vary the number of hidden nodes with Importance sampling. As with the learning rate, the spread of data points are much smaller for Importance than for Metropolis. Now we more clearly see that as the number of hidden nodes increases, the quicker in terms of SGD cycles the solution reaches its equilibrium. Still they converge to more or less the same local energy. Again, only using one hidden node converges to a higher energy than for two, three and four hidden nodes.
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Hidden_Int_Imp.png}
+\begin{figure}[t!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Imp.png}
 	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Importance sampling, $\Delta t=0.5$ and $\eta=0.2$ for two interacting electrons in 2D. Using one hidden node does not give as good solution as the two, three and four hidden nodes. \label{fig:check_hidden_Int_Imp}}
 \end{figure} 
 
+\newpage
 \subsubsection{Gibbs Sampling}
 \label{subsubsect:Results_int_Gibbs}
 As with th non-interacting case, we use the same Gibbs parameter $\sigma=0.7$. With this parameter we test the learning rate with Gibbs sampling. In Figure \ref{fig:check_learnrate_Int_Gib} we see that the local energy quickly drops, before it increases a little and reach equilibrium around 200 SGD cycles. With $\eta\geq0.5$, the drop is much bigger than with smaller learning rates. So the local energy has increases more with these bigger learning rates before it reaches equilibrium. The best learning rate seems to be $\eta=0.2$, like before.
 
 A thing to notice with this interacting case when using Gibbs sampling is that we don't get the expected analytical ground state energy of 3 a.u. The computed local energy seems to converge around 4.374 a.u. instead. So we can assume that there is something wrong with the numerics when we use Gibbs sampling with interaction, since we would expect convergence closer to the analytical ground state energy. 
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Int_Gib_learnrate.png}
+\begin{figure}[t!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Gib_learnrate.png}
 	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.7$ for two interacting electrons in 2D. For lower learning rates the solution approaches equilibrium faster than bigger learning rates in the beginning, but they all reach equilibrium around 200 SGD cycles. \label{fig:check_learnrate_Int_Gib}}
 \end{figure}
 
+\newpage
 In Figure \ref{fig:check_hidden_Int_Gib} we vary the number of hidden nodes using the best learning rate with Gibbs sampling. The local energy drops quickly towards equilibrium in the beginning, which is still not around the expected analytical ground state energy, before it flattens out. The exception is with two hidden nodes. There the local energy drops a little more in the beginning than for the others, before it increases and reaches equilibrium at around the same time as for the other number of hidden nodes around 200 SGD cycles. 
 
-\begin{figure}[htbp!]
-	\centering\includegraphics[width=0.75\linewidth, height=0.7\linewidth]{Hidden_Int_Gib.png}
+\begin{figure}[t!]
+	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Gib.png}
 	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Gibbs sampling, $\sigma=0.7$ and $\eta=0.2$ for two interacting electrons in 2D. They all converge in a similar matter, except for two hidden nodes which drops more in the beginning before it increases towards equilibrium. \label{fig:check_hidden_Int_Gib}}
 \end{figure}
 
+\newpage
 \subsubsection{Local Energy Analysis of Sampling Methods}
 \label{subsubsect:Results_int_Analysis}
 With the best parameters for the three sampling methods, we look more at how the computed local energies are as we vary the number of hidden nodes. The final local energies for two interacting electrons in 2D can be seen in Table \ref{tab:Int_energies}. Here we have used $N_{SGD}=600$ and $\eta=0.2$ for all the sampling methods, and used the same best sampling parameters as in the non-interacting cases.
@@ -656,13 +666,13 @@ In the non-interacting case we got energies very close to the analytically calcu
 
 For the interacting case we got energies a little higher than the analytically calculated energies. For the Metropolis and Importance methods, we got reasonably good energies close to the analytical energies. The Metropolis was also the fastest method in CPU time here, while Importance was the slowest but gave a better error than Metropolis. The Gibbs method did not converge towards the expected analytical energy when interaction was involved. This leads us to assume that something was not working properly with the program.
 
-For future work, we could try to use other optimization methods like ADAM. We could also do a steepest descent method on some of the parameters we have used to make them adapt to make a better fit to the evolving behavior of the system. To get faster CPU times we could implement parallelization by using MPI. The system we have look at in this project have not included Pauli's principle. So this is something we could implement in future work.
+For future work, we could try to use other optimization methods like ADAM. We could also do a steepest descent method on some of the parameters we have used to make them adapt to make a better fit to the evolving behavior of the system. To get faster CPU times we could implement parallelization by using MPI. The system we have look at in this project have not included Pauli's principle. So this is also something we could implement in future work, and extend our system with more particles in higher dimensions.
 
 \appendix
 \section*{Appendix:}
 \section{Kinetic Energy Derivation}
 \label{appendix:E_k}
-Start by rewriting the kinetic part:
+Here we will derive the kinetic energy part of the local energy expression in equation \ref{eq:EL_kin_pot_int}. We start by rewriting the kinetic part:
 \begin{equation}
 \label{eq:Wave_Laplacian}
 \frac{1}{\Psi}\nabla^2\Psi=\nabla^2\ln\Psi + (\nabla\ln\Psi)^2
@@ -673,20 +683,21 @@ Then we find the logarithm of the wave function:
 \right)
 \end{equation}
 Than we take the gradient with respect to $X_k$:
-\begin{align*}
+\begin{align}
 \label{eq:Gradient_Xk}
-\frac{\partial }{\partial X_k}\ln\Psi&=-\frac{X_k-a_k}{\sigma^2} + \sum_{j}^{N}\frac{e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}{1+e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}\cdot\frac{w_{kj}}{\sigma^2}\\ &=-\frac{X_k-a_k}{\sigma^2} + \sum_{j}^{N}\frac{1}{1+e^{-b_j - \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}\cdot\frac{w_{kj}}{\sigma^2}\\
+\frac{\partial }{\partial X_k}\ln\Psi&=-\frac{X_k-a_k}{\sigma^2} + \sum_{j}^{N}\frac{e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}{1+e^{b_j + \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}\cdot\frac{w_{kj}}{\sigma^2}\nonumber\\ &=-\frac{X_k-a_k}{\sigma^2} + \sum_{j}^{N}\frac{1}{1+e^{-b_j - \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}}}\cdot\frac{w_{kj}}{\sigma^2}\nonumber\\
 &=-\frac{X_k-a_k}{\sigma^2} + \sum_{j}^{N}\Sigma(u_j)\cdot\frac{w_{kj}}{\sigma^2}
-\end{align*}
+\end{align}
 The denominator in the fraction above has a famous name called the logistic sigmoid function. For simplicity we will use $\Sigma$ for the sigmoid function as
 \begin{equation}
 \label{eq:sigmoid}
 \Sigma(u_j)=\frac{1}{1+e^{u_j}}\quad \text{with} \quad u_j=-b_j - \sum_{i}^{M}\frac{X_iw_{ij}}{\sigma^2}.
 \end{equation}
 The second derivative is then:
-\begin{align*}
+\begin{align}
+\label{eq:2nd_Gradient_Xk}
 \frac{\partial^2 }{\partial X_k^2}\ln\Psi&=-\frac{1}{\sigma^2}+\sum_{j}^{N}\Sigma(u_j)\cdot\Sigma(-u_j)\cdot\frac{w_{kj}^2}{\sigma^4}
-\end{align*}
+\end{align}
 The full kinetic energy part in equation \ref{eq:Wave_Laplacian} is then:
 \begin{align*}
 \frac{1}{\Psi}\nabla^2\Psi&= -\frac{M}{\sigma^2} +\sum_{i}^{M}\sum_{j}^{N}\Sigma(u_j)\cdot\Sigma(-u_j)\cdot\frac{w_{ij}^2}{\sigma^4} +\sum_{i}^{M}\frac{X_i-a_i}{\sigma^2}\\ 
