@@ -32,16 +32,16 @@ void Sampler::sample(bool acceptedStep, bool interaction, double GibbsValue, vec
 
     if ((double)getStepNumber() >= m_system->getEquilibrationFraction()*getNumberOfMetropolisSteps()){
         // Sample if the system is at equilibrium
-        if (acceptedStep == true){
+        if (acceptedStep==true){
             m_acceptedNumber++;
         }
 
         m_cumulativeEnergy          += m_energy;
         m_cumulativeEnergySquared   += m_energy*m_energy;
 
-        vector<double> temp(getDimensionOfGradient());
-        vector<double> temp2(getDimensionOfGradient());
-        vector<double> grad(getDimensionOfGradient());
+        vector<double> temp (getDimensionOfGradient());
+        vector<double> temp2 (getDimensionOfGradient());
+        vector<double> grad (getDimensionOfGradient());
 
         grad = m_system->GradientParameters(GibbsValue, X, a, b, w);
         temp = m_system->getCumulativeGradient();
@@ -109,8 +109,8 @@ void Sampler::computeAverages(vector<double> &G) {
     m_energy = m_cumulativeEnergy/frac;
     m_cumulativeEnergySquared /= frac;
 
-    vector<double> temp(getDimensionOfGradient());
-    vector<double> temp2(getDimensionOfGradient());
+    vector<double> temp (getDimensionOfGradient());
+    vector<double> temp2 (getDimensionOfGradient());
 
     temp = m_system->getCumulativeGradient();
     temp2 = m_system->getCumulativeEnGradient();

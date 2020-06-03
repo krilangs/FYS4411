@@ -21,6 +21,7 @@ double HarmonicOscillator::computeLocalEnergy(bool interaction, double GibbsValu
     double interactPotential = 0;
 
     int dim = m_system->getNumberOfDimensions();
+    int P   = m_system->getNumberOfParticles();
     int M   = m_system->getNumberOfVisibleNodes();
 
     kineticEnergy = -0.5*m_system->getWaveFunction()->computeDoubleDerivative(GibbsValue, X, H, a, b, w);  // From analytical double derivative
@@ -33,7 +34,7 @@ double HarmonicOscillator::computeLocalEnergy(bool interaction, double GibbsValu
     potentialEnergy *= 0.5;
 
     if (interaction == true){
-        for (int j=0; j<m_system->getNumberOfParticles(); j++){
+        for (int j=0; j<P; j++){
             for (int i=0; i<j; i++){
                 interactPotential += 1/m_system->getDistanceMatrixij(i,j);
             }

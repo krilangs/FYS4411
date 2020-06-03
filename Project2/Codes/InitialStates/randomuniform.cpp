@@ -5,6 +5,7 @@
 #include "../particle.h"
 #include "../system.h"
 #include <cmath>
+#include <random>
 
 using std::cout;
 using std::endl;

@@ -207,14 +207,14 @@ void System::updateDistanceMatrix(vector<double> m_X, int randparticle)
 vector<vector<double>> System::computematrixdistance(vector<double>& m_X)
 {
     vector<vector<double>> distancematrix(m_numberOfParticles, vector<double>(m_numberOfParticles));
-    double temp;
+    //double temp;
     int j = 0;
-    int z;
+    //int z;
     int k = 0;
 
     while (j < m_numberOfVisibleNodes){
-        temp = 0;
-        z = 0;
+        double temp = 0;
+        int z = 0;
 
         for (int i=0; i<j; i+=m_numberOfDimensions){
             for (int q=0; q<m_numberOfDimensions; q++){
