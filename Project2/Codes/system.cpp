@@ -155,7 +155,6 @@ void System::runMetropolisSteps(string method, int numberOfMetropolisSteps, vect
     m_sampler->setDimensionOfGradient(m_numberOfParameters);
 
     // Initial values
-    setDistanceMatrix(computematrixdistance(X));
     m_psiOld = m_waveFunction->evaluate(GibbsValue, X, H, a, b, w);
     setQuantumForce(m_waveFunction->QuantumForce(X, a, b, w));
 
@@ -207,14 +206,12 @@ void System::updateDistanceMatrix(vector<double> m_X, int randparticle)
 vector<vector<double>> System::computematrixdistance(vector<double>& m_X)
 {
     vector<vector<double>> distancematrix(m_numberOfParticles, vector<double>(m_numberOfParticles));
-    //double temp;
     int j = 0;
-    //int z;
-    int k = 0;
 
     while (j < m_numberOfVisibleNodes){
         double temp = 0;
         int z = 0;
+        int k = 0;
 
         for (int i=0; i<j; i+=m_numberOfDimensions){
             for (int q=0; q<m_numberOfDimensions; q++){

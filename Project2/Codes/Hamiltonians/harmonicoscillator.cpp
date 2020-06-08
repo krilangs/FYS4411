@@ -1,6 +1,7 @@
 #include "harmonicoscillator.h"
 #include <cassert>
 #include <iostream>
+#include <cmath>
 #include "../system.h"
 #include "../particle.h"
 #include "../WaveFunctions/wavefunction.h"
@@ -34,11 +35,30 @@ double HarmonicOscillator::computeLocalEnergy(bool interaction, double GibbsValu
     potentialEnergy *= 0.5;
 
     if (interaction == true){
+        double par_i = 0;
+        double par_j = 0;
+
+        for (int i=1; i<P; i++){
+            for (int j=0; j<i; j++){
+                double sum = 0;
+                for (int d=0; d<dim; d++){
+                    par_i = dim*i + d;
+                    par_j = dim*j + d;
+                    sum += (X[par_i] - X[par_j])*(X[par_i] - X[par_j]);
+                }
+                if (sqrt(sum) > 0.00005){
+                    interactPotential += 1/sqrt(sum);
+                }
+            }
+        }
+
+        /* REMOVE THIS PART WHEN DONE!!!!!!
         for (int j=0; j<P; j++){
             for (int i=0; i<j; i++){
                 interactPotential += 1/m_system->getDistanceMatrixij(i,j);
             }
         }
+        */
     }
 
     return kineticEnergy + potentialEnergy + interactPotential;

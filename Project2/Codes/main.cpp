@@ -17,6 +17,8 @@ using namespace std;
 
 int main() {
     /* The restricted Boltzmann machine (RBM) applied to the quantum many body problem.
+     * Uncomment the desired sampling method to use, and set the boolean interaction
+     * parameter to be false or true.
      */
     int numberOfDimensions  = 2;    // 1 or 2
     int numberOfParticles   = 2;    // 1 or 2
@@ -25,16 +27,16 @@ int main() {
     int numberOfSteps       = int (1e5);    // Number of MC steps per SGD cycle
     int numberOfCycles      = 600;          // Number of SGD cycles
 
-    //string method = "Metropolis";
+    string method = "Metropolis";
     //string method = "Importance";
-    string method = "Gibbs";
+    //string method = "Gibbs";
 
     bool interaction = true;
 
     // Variational/RBM parameters
     double learningRate     = 0.2;
     double omega            = 1.0;      // Oscillator frequency
-    double sigma            = 0.7;      // Sigma in energy function (Gibbs)
+    double sigma            = 1.0;      // Sigma in energy function (Gibbs)
     double stepLength       = 0.5;      // Metropolis step length
     double timeStep         = 0.5;      // Importance sampling time step
 
@@ -131,11 +133,11 @@ int main() {
 
     if (interaction == false){
         cout << " Final run" << endl;
-        system->openDataFile            (filename_final);
+        //system->openDataFile            (filename_final);
         int finalNumberOfSteps = 1.5e+6;
         system->runMetropolisSteps      (method, finalNumberOfSteps, G, interaction, X, H, a, b, w);
         system->printOut                (numberOfCycles);
-        system->writeToFile             (X, a, b, w);
+        //system->writeToFile             (X, a, b, w);
     }
     else{
         system->runMetropolisSteps      (method, numberOfSteps, G, interaction, X, H, a, b, w);
