@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 """
-Program that produces many plots for Metropolis, Importance and Gibbs sampling
-without and with interaction by reading data from files.
+Program that produces various plots for Metropolis, Importance and Gibbs
+sampling without and with interaction by reading data from files.
+Also produces plots for doing linear regression on interaction data. These
+plots are commented out to not produce too many plots at the same time when
+the program is run.
 """
 
 fonts = {"font.size": 15}
@@ -260,10 +263,10 @@ plt.tight_layout()
 #plt.savefig("Figures/Int_Met_learnrate.png")
 
 # Linear regression of data
-LinReg(400, E01_int, SGD_cycle, label="$\\eta=0.1$", filename="BruteReg01", write=False)
-LinReg(300, E02_int, SGD_cycle, label="$\\eta=0.2$", filename="BruteReg02", write=False)
-LinReg(300, E05_int, SGD_cycle, label="$\\eta=0.5$", filename="BruteReg05", write=False)
-LinReg(300, E06_int, SGD_cycle, label="$\\eta=0.6$", filename="BruteReg06", write=False)
+#LinReg(400, E01_int, SGD_cycle, label="$\\eta=0.1$", filename="BruteReg01", write=False)
+#LinReg(300, E02_int, SGD_cycle, label="$\\eta=0.2$", filename="BruteReg02", write=False)
+#LinReg(300, E05_int, SGD_cycle, label="$\\eta=0.5$", filename="BruteReg05", write=False)
+#LinReg(300, E06_int, SGD_cycle, label="$\\eta=0.6$", filename="BruteReg06", write=False)
 
 # Test different number of hidden nodes
 E_H1_int = read_file("BruteCycleInt_0.500000_n_0.200000_Np_2_D_2_H_1")
@@ -290,10 +293,10 @@ plt.tight_layout()
 #plt.savefig("Figures/Hidden_Int_Met.png")
 
 # Linear regression of data
-LinReg(300, E_H1_int, SGD_cycle, label="$N_H=1$", filename="BruteRegH1", write=True)
-LinReg(300, E_H2_int, SGD_cycle, label="$N_H=2$", filename="BruteRegH2", write=True)
-LinReg(300, E_H3_int, SGD_cycle, label="$N_H=3$", filename="BruteRegH3", write=True)
-LinReg(300, E_H4_int, SGD_cycle, label="$N_H=4$", filename="BruteRegH4", write=True)
+#LinReg(200, E_H1_int, SGD_cycle, label="$N_H=1$", filename="BruteRegH1", write=True)
+#LinReg(200, E_H2_int, SGD_cycle, label="$N_H=2$", filename="BruteRegH2", write=True)
+#LinReg(200, E_H3_int, SGD_cycle, label="$N_H=3$", filename="BruteRegH3", write=True)
+#LinReg(200, E_H4_int, SGD_cycle, label="$N_H=4$", filename="BruteRegH4", write=True)
 
 
 """ Interaction Importance Sampling"""
@@ -324,10 +327,10 @@ plt.tight_layout()
 #plt.savefig("Figures/Int_Imp_learnrate.png")
 
 # Linear regression of data
-LinReg(450, EI01_int, SGD_cycle, label="$\\eta=0.1$", filename="ImpReg01", write=False)
-LinReg(250, EI02_int, SGD_cycle, label="$\\eta=0.2$", filename="ImpReg02", write=False)
-LinReg(200, EI05_int, SGD_cycle, label="$\\eta=0.5$", filename="ImpReg05", write=False)
-LinReg(200, EI06_int, SGD_cycle, label="$\\eta=0.6$", filename="ImpReg06", write=False)
+#LinReg(450, EI01_int, SGD_cycle, label="$\\eta=0.1$", filename="ImpReg01", write=False)
+#LinReg(250, EI02_int, SGD_cycle, label="$\\eta=0.2$", filename="ImpReg02", write=False)
+#LinReg(200, EI05_int, SGD_cycle, label="$\\eta=0.5$", filename="ImpReg05", write=False)
+#LinReg(200, EI06_int, SGD_cycle, label="$\\eta=0.6$", filename="ImpReg06", write=False)
 
 # Test different number of hidden nodes
 EI_H1_int = read_file("ImpCycleInt_0.500000_n_0.200000_Np_2_D_2_H_1")
@@ -354,10 +357,10 @@ plt.tight_layout()
 #plt.savefig("Figures/Hidden_Int_Imp.png")
 
 # Linear regression of data
-LinReg(250, EI_H1_int, SGD_cycle, label="$N_H=1$", filename="ImpRegH1", write=True)
-LinReg(250, EI_H2_int, SGD_cycle, label="$N_H=2$", filename="ImpRegH2", write=True)
-LinReg(250, EI_H3_int, SGD_cycle, label="$N_H=3$", filename="ImpRegH3", write=True)
-LinReg(250, EI_H4_int, SGD_cycle, label="$N_H=4$", filename="ImpRegH4", write=True)
+#LinReg(250, EI_H1_int, SGD_cycle, label="$N_H=1$", filename="ImpRegH1", write=True)
+#LinReg(250, EI_H2_int, SGD_cycle, label="$N_H=2$", filename="ImpRegH2", write=True)
+#LinReg(250, EI_H3_int, SGD_cycle, label="$N_H=3$", filename="ImpRegH3", write=True)
+#LinReg(250, EI_H4_int, SGD_cycle, label="$N_H=4$", filename="ImpRegH4", write=True)
 
 
 """ Interaction Gibbs Sampling"""
@@ -388,10 +391,10 @@ plt.tight_layout()
 #plt.savefig("Figures/Int_Gib_learnrate.png")
 
 # Linear regression of data
-LinReg(200, EG01_int, SGD_cycle, label="$\\eta=0.1$", filename="GibReg01", write=False)
-LinReg(200, EG02_int, SGD_cycle, label="$\\eta=0.2$", filename="GibReg02", write=False)
-LinReg(200, EG05_int, SGD_cycle, label="$\\eta=0.5$", filename="GibReg05", write=False)
-LinReg(200, EG06_int, SGD_cycle, label="$\\eta=0.6$", filename="GibReg06", write=False)
+#LinReg(350, EG01_int, SGD_cycle, label="$\\eta=0.1$", filename="GibReg01", write=False)
+#LinReg(200, EG02_int, SGD_cycle, label="$\\eta=0.2$", filename="GibReg02", write=False)
+#LinReg(100, EG05_int, SGD_cycle, label="$\\eta=0.5$", filename="GibReg05", write=False)
+#LinReg(100, EG06_int, SGD_cycle, label="$\\eta=0.6$", filename="GibReg06", write=False)
 
 # Test different number of hidden nodes
 EG_H1_int = read_file("GibCycleInt_0.700000_n_0.200000_Np_2_D_2_H_1")
@@ -418,7 +421,7 @@ plt.tight_layout()
 #plt.savefig("Figures/Hidden_Int_Gib.png")
 
 # Linear regression of data
-LinReg(200, EG_H1_int, SGD_cycle, label="$N_H=1$", filename="GibRegH1", write=True)
-LinReg(200, EG_H2_int, SGD_cycle, label="$N_H=2$", filename="GibRegH2", write=True)
-LinReg(200, EG_H3_int, SGD_cycle, label="$N_H=3$", filename="GibRegH3", write=True)
-LinReg(200, EG_H4_int, SGD_cycle, label="$N_H=4$", filename="GibRegH4", write=True)
+#LinReg(200, EG_H1_int, SGD_cycle, label="$N_H=1$", filename="GibRegH1", write=True)
+#LinReg(200, EG_H2_int, SGD_cycle, label="$N_H=2$", filename="GibRegH2", write=True)
+#LinReg(200, EG_H3_int, SGD_cycle, label="$N_H=3$", filename="GibRegH3", write=True)
+#LinReg(200, EG_H4_int, SGD_cycle, label="$N_H=4$", filename="GibRegH4", write=True)

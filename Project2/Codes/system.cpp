@@ -117,8 +117,6 @@ bool System::GibbsSampling(vector<double> &X, vector<double> H, vector<double> a
 
         sigmoid = 1./(1 + exp(-b[j] - sum));
 
-        //H[j] = Random::nextDouble() < sigmoid;
-
         if (Random::nextDouble() <= sigmoid){
             H[j] = 0;
         }
@@ -155,6 +153,7 @@ void System::runMetropolisSteps(string method, int numberOfMetropolisSteps, vect
     m_sampler->setDimensionOfGradient(m_numberOfParameters);
 
     // Initial values
+    setDistanceMatrix(computematrixdistance(X));
     m_psiOld = m_waveFunction->evaluate(GibbsValue, X, H, a, b, w);
     setQuantumForce(m_waveFunction->QuantumForce(X, a, b, w));
 

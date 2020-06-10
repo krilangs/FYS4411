@@ -42,7 +42,7 @@ int main() {
 
     double equilibration    = 0.2;      // Amount of the total steps used for equilibrium
 
-    int numberOfVisible_Nodes = numberOfParticles*numberOfDimensions;  // Number of visible nodes
+    int numberOfVisible_Nodes = numberOfParticles*numberOfDimensions;
     int numberOfParameters = numberOfVisible_Nodes + numberOfHiddenNodes + numberOfVisible_Nodes*numberOfHiddenNodes;
 
     // Vectors for RBM parameters and gradient
@@ -66,6 +66,8 @@ int main() {
                                                            numberOfVisible_Nodes, sigma, X, H, a, b, w, timeStep, numberOfParameters));
     system->setEquilibrationFraction    (equilibration);
     system->setStepLength               (stepLength);
+    system->setLearningRate             (learningRate);
+    system->setNumberOfParameters       (numberOfParameters);
 
     // Data files for SQD cycle and final MC run
     string filename_cycle;
@@ -119,8 +121,7 @@ int main() {
         }
     }
 
-    system->setLearningRate         (learningRate);
-    system->setNumberOfParameters   (numberOfParameters);
+
     system->openFile(filename_cycle);
     cout << "Start Metropolis" << endl;
     auto start = chrono::system_clock::now();
@@ -133,11 +134,11 @@ int main() {
 
     if (interaction == false){
         cout << " Final run" << endl;
-        //system->openDataFile            (filename_final);
+        system->openDataFile            (filename_final);
         int finalNumberOfSteps = 1.5e+6;
         system->runMetropolisSteps      (method, finalNumberOfSteps, G, interaction, X, H, a, b, w);
         system->printOut                (numberOfCycles);
-        //system->writeToFile             (X, a, b, w);
+        system->writeToFile             (X, a, b, w);
     }
     else{
         system->runMetropolisSteps      (method, numberOfSteps, G, interaction, X, H, a, b, w);

@@ -58,7 +58,7 @@ def block(x):
     return ans
 
 #-------------------------------------------
-# Non-interacting brute Metropolis
+""" Non-interacting brute Metropolis"""
 #x = loadtxt("Data/FinalBruteCycle_0.500000_n_0.200000_Np_1_D_1_H_1.dat")
 #x = loadtxt("Data/FinalBruteCycle_0.500000_n_0.200000_Np_1_D_1_H_2.dat")
 #x = loadtxt("Data/FinalBruteCycle_0.500000_n_0.200000_Np_1_D_2_H_1.dat")
@@ -70,7 +70,7 @@ def block(x):
 #x = loadtxt("Data/FinalBruteCycle_0.500000_n_0.200000_Np_2_D_2_H_3.dat")
 #x = loadtxt("Data/FinalBruteCycle_0.500000_n_0.200000_Np_2_D_2_H_4.dat")
 
-# Non-interacting Importance sampling
+""" Non-interacting Importance sampling"""
 #x = loadtxt("Data/FinalImpCycle_0.500000_n_0.200000_Np_1_D_1_H_1.dat")
 #x = loadtxt("Data/FinalImpCycle_0.500000_n_0.200000_Np_1_D_1_H_2.dat")
 #x = loadtxt("Data/FinalImpCycle_0.500000_n_0.200000_Np_1_D_2_H_1.dat")
@@ -83,7 +83,7 @@ def block(x):
 #x = loadtxt("Data/FinalImpCycle_0.500000_n_0.200000_Np_2_D_2_H_4.dat")
 
 
-# Non-interacting Gibbs sampling
+""" Non-interacting Gibbs sampling"""
 #x = loadtxt("Data/FinalGibCycle_0.700000_n_0.200000_Np_1_D_1_H_1.dat")
 #x = loadtxt("Data/FinalGibCycle_0.700000_n_0.200000_Np_1_D_1_H_2.dat")
 #x = loadtxt("Data/FinalGibCycle_0.700000_n_0.200000_Np_1_D_2_H_1.dat")
@@ -96,21 +96,21 @@ def block(x):
 #x = loadtxt("Data/FinalGibCycle_0.700000_n_0.200000_Np_2_D_2_H_4.dat")
 
 #-------------------------------------------
-# Interacting Metropolis sampling
+""" Interacting Metropolis sampling"""
 #x = loadtxt("Data/BruteRegH1.txt")
 #x = loadtxt("Data/BruteRegH2.txt")
 #x = loadtxt("Data/BruteRegH3.txt")
 #x = loadtxt("Data/BruteRegH4.txt")
 
 
-# Interacting Importance sampling
+""" Interacting Importance sampling"""
 #x = loadtxt("Data/ImpRegH1.txt")
 #x = loadtxt("Data/ImpRegH2.txt")
 #x = loadtxt("Data/ImpRegH3.txt")
 #x = loadtxt("Data/ImpRegH4.txt")
 
 
-# Interacting Gibbs sampling
+""" Interacting Gibbs sampling"""
 #x = loadtxt("Data/GibRegH1.txt")
 #x = loadtxt("Data/GibRegH2.txt")
 #x = loadtxt("Data/GibRegH3.txt")

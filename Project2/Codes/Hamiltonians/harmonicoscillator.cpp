@@ -51,14 +51,6 @@ double HarmonicOscillator::computeLocalEnergy(bool interaction, double GibbsValu
                 }
             }
         }
-
-        /* REMOVE THIS PART WHEN DONE!!!!!!
-        for (int j=0; j<P; j++){
-            for (int i=0; i<j; i++){
-                interactPotential += 1/m_system->getDistanceMatrixij(i,j);
-            }
-        }
-        */
     }
 
     return kineticEnergy + potentialEnergy + interactPotential;

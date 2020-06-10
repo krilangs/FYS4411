@@ -15,9 +15,10 @@ RandomUniform::RandomUniform(System* system, int numberOfDimensions, int numberO
                              vector<vector<double>> &m_w, double timeStep, int numberOfParameters):
                              InitialState(system) {
     /* The Initial State class is in charge of everything to do with the
-     * initialization of the system; this includes determining the number of
-     * particles and the number of dimensions used. To make sure everything
-     * works as intended, this information is passed to the system here.
+     * initialization of the system; this includes among others
+     * determining the number of particles and the number of dimensions
+     * used. To make sure everything works as intended,
+     * this information is passed to the system here.
      */
     assert(numberOfDimensions > 0 && numberOfParticles > 0);
     assert(numberOfHiddenNodes > 0 && numberOfVisibleNodes > 0);
