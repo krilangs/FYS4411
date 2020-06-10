@@ -49,7 +49,7 @@ prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},frame=single,show
 \begin{abstract}
 In this project we study fermions in a harmonic oscillator potential using a restricted Boltzmann machine (RBM) to approximate the wave function as a neural network quantum state (NQS) combined with a variational Monte Carlo (VMC) method. To compute the ground state of the system, a stochastic gradient descent (SGD) method is used, and to do a statistical analysis of the results we use blocking. The computation of the system is tested with three sampling methods; a standard brute-force Metropolis method, Importance sampling and Gibbs sampling.
 
-The computed energies in atomic units (a.u.) are benchmarked against analytical ground state energies for systems of one and two electrons in one and two dimensions with and without interaction. The computed results are found to have a strong dependence on the initial guesses of the variational/RBM parameters of the system, together with the sampling and learning rate parameters. For the non-interacting case the Gibbs method is found to give the best solutions with the best errors after we have found the best parameters, but all three sampling methods produce good energies in this case. For interaction the Importance sampling is found to give the best energies and errors for two electrons in 2D. 
+The computed energies in atomic units (a.u.) are benchmarked against analytical ground state energies for systems of one and two electrons in one and two dimensions with and without interaction. The computed results are found to have a strong dependence on the initial guesses of the variational/RBM parameters of the system, together with the sampling and learning rate parameters. For both the non-interacting and interacting cases the Gibbs method is found to give the best solutions and on average the best errors with the found optimal parameters, but all three sampling methods produce good energies close to the expected analytical energies. 
 \end{abstract}
 
 
@@ -569,13 +569,13 @@ Another thing we notice when we increase the number of hidden nodes but keep $N_
 
 \subsection{Interacting Electrons}
 \label{subsect:Results_int}
-With interaction between the electrons, we will do the same analysis of the system as we did for non-interacting electrons. The difference is that we now only look at two electrons in 2D since Pauli's principle is not accounted for. In this case we expect the analytical ground state energy to be 3 a.u (sect. \ref{subsubsect:Analytical E_L}). The parameters we use are described in the Methods section \ref{subsect:Method_int}.
+With interaction between the electrons, we will do the same analysis of the system as we did for non-interacting electrons. The difference is that we now only look at two electrons in 2D since Pauli's principle is not accounted for. In this case we expect the analytical ground state energy to be 3 a.u (sect. \ref{subsubsect:Analytical E_L}). The numerical parameters we use are described in the Methods section \ref{subsect:Method_int}.
 
 \subsubsection{Metropolis Sampling}
 \label{subsubsect:Results_int_Metropolis}
-We use the same step length $L=0.5$ that we found in the non-interacting case for Metropolis sampling first. Then we once again will experiment with the learning rate of this interacting system. In Figure \ref{fig:check_learnrate_Int_Met} we see how the local energy behaves for various learning rates. Here we see that as the learning rate increase, the faster the solution converges. Since there is such a big spread of data points for the local energy, it is not easy to see what the solution converges towards. This can be fixed by doing a linear regression fit of the data point. By doing a linear regression on the data points after equilibrium for each learning rate respectively, we get that the do not converge to the exact ground state energy. The computed energies after linear regression gives the converged energies around 3.08 a.u., which is a little higher than the exact energy of 3 a.u. From this figure we can conclude that $\eta=0.2$ seems to give the best solution.
+We use the same step length $L=0.5$ that we found in the non-interacting case for Metropolis sampling first. Then we once again will experiment with the learning rate of this interacting system. In Figure \ref{fig:check_learnrate_Int_Met} we see how the local energy behaves for various learning rates. Here we see that as the learning rate increase, the faster the solution converges to equilibrium. Since there is such a big spread of data points for the local energy, it is not easy to see what the solution converges towards exactly. This can be fixed by doing a linear regression fit of the data points. By doing a linear regression on the data points after equilibrium for each learning rate respectively, we get that they do not converge exact to the exact ground state energy. The computed energies after linear regression gives the converged energies around 3.08 a.u., which is a little higher than the exact energy of 3 a.u. From this figure we can conclude that $\eta=0.2$ seems to give the best solution like for non-interacting Metropolis.
 
-The interacting solution uses more SGD cycles to reach equilibrium than the non-interacting system. So the system needs more cycles to adapt to the interacting wave function than for a non-interacting wave function. The non-interacting Metropolis only needed around 20 SGD cycles to reach equilibrium, while the best case here needs around 300 SGD cycles to reach equilibrium.
+The interacting solution uses more SGD cycles to reach equilibrium than the non-interacting system. So the system needs more cycles to adapt to the interacting wave function than for a non-interacting wave function. The non-interacting Metropolis only needed around 20 SGD cycles to reach equilibrium, while the best case here needs around 250-300 SGD cycles to reach equilibrium.
 
 \begin{figure}[ht!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Met_learnrate.png}
@@ -584,7 +584,7 @@ The interacting solution uses more SGD cycles to reach equilibrium than the non-
 
 \newpage
 Changing the number of hidden nodes did not change much for the non-interacting system. We test now the interacting system in terms of the number of hidden nodes to see if we get any differences. In Figure 
-\ref{fig:check_hidden_Int_Met} we see the local energy when we use up till four hidden nodes in our neural network. Using one hidden node gives a much higher energy after equilibrium than the other three cases. It looks like when using a higher number of hidden nodes, the system manages to reach equilibrium in fewer SGD cycles. We will later also see that the final energies are not as alike as in the non-interacting system.
+\ref{fig:check_hidden_Int_Met} we see the local energy when we use up till four hidden nodes in our neural network. Using one hidden node gives a much higher energy after equilibrium than the other three cases. It looks like when using a higher number of hidden nodes, the system manages to reach equilibrium in fewer SGD cycles. With three and four hidden nodes we get very similar behavior of the energy solutions, but we can barely see that four nodes drops the solution a little bit faster.
 
 \begin{figure}[t!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Met.png}
@@ -594,7 +594,7 @@ Changing the number of hidden nodes did not change much for the non-interacting 
 \newpage
 \subsubsection{Importance Sampling}
 \label{subsubsect:Results_int_Importance}
-In the non-interacting case with Importance sampling when varying the learning rate, we got a much smaller spread of data points/smoother curve compared to Metropolis sampling. This is also the case in the interacting system with Importance sampling. By looking at Figure \ref{fig:check_learnrate_Int_Imp} we see that the spread of data points/thickness of the curve is much smaller than for interacting Metropolis. The form of the curves are the same for both cases. That is why we choose the same learning rate $\eta=0.2$ here as well.
+In the non-interacting case with Importance sampling when varying the learning rate, we got a much smaller spread of data points/smoother curve compared to Metropolis sampling. This is also the case in the interacting system with Importance sampling. By looking at Figure \ref{fig:check_learnrate_Int_Imp} we see that the spread of data points/thickness of the curve is smaller/thinner than for interacting Metropolis. The form of the curves are the same for both cases, where a higher learning rate gives faster equilibrium convergence. For $\eta=0.1$, the solution takes a lot of SGD cycles before reaching equilibrium compared to the other learning rates. We use the same conclusion like before for why we choose the same learning rate $\eta=0.2$ here as well.
 
 \begin{figure}[t!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Imp_learnrate.png}
@@ -602,69 +602,69 @@ In the non-interacting case with Importance sampling when varying the learning r
 \end{figure}
 
 \newpage
-In Figure \ref{fig:check_hidden_Int_Imp} we vary the number of hidden nodes with Importance sampling. As with the learning rate, the spread of data points are much smaller for Importance than for Metropolis. Now we more clearly see that as the number of hidden nodes increases, the quicker in terms of SGD cycles the solution reaches its equilibrium. Still they converge to more or less the same local energy. Again, only using one hidden node converges to a higher energy than for two, three and four hidden nodes.
+In Figure \ref{fig:check_hidden_Int_Imp} we vary the number of hidden nodes with Importance sampling. As with the learning rate, the spread of data points are much smaller for Importance than for Metropolis. Now we more clearly see that as the number of hidden nodes increases, the quicker in terms of SGD cycles the solution reaches its equilibrium. Still they converge to more or less the same local energy. Again, only using one hidden node converges to a higher energy than for two, three and four hidden nodes which seem to converge to around energy of 3.08 a.u.
 
 \begin{figure}[t!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Imp.png}
-	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Importance sampling, $\Delta t=0.5$ and $\eta=0.2$ for two interacting electrons in 2D. Using one hidden node does not give as good solution as the two, three and four hidden nodes. \label{fig:check_hidden_Int_Imp}}
+	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Importance sampling, $\Delta t=0.5$ and $\eta=0.2$ for two interacting electrons in 2D. Using one hidden node does not give as good solution as using two, three and four hidden nodes. \label{fig:check_hidden_Int_Imp}}
 \end{figure} 
 
 \newpage
 \subsubsection{Gibbs Sampling}
 \label{subsubsect:Results_int_Gibbs}
-As with th non-interacting case, we use the same Gibbs parameter $\sigma=0.7$. With this parameter we test the learning rate with Gibbs sampling. In Figure \ref{fig:check_learnrate_Int_Gib} we see that the local energy quickly drops, before it increases a little and reach equilibrium around 200 SGD cycles. With $\eta\geq0.5$, the drop is much bigger than with smaller learning rates. So the local energy has increases more with these bigger learning rates before it reaches equilibrium. The best learning rate seems to be $\eta=0.2$, like before.
-
-A thing to notice with this interacting case when using Gibbs sampling is that we don't get the expected analytical ground state energy of 3 a.u. The computed local energy seems to converge around 4.374 a.u. instead. So we can assume that there is something wrong with the numerics when we use Gibbs sampling with interaction, since we would expect convergence closer to the analytical ground state energy. 
+As with the non-interacting case, we use the same Gibbs parameter $\sigma=0.7$. With this parameter we test the learning rate with Gibbs sampling. In Figure \ref{fig:check_learnrate_Int_Gib} we see that the local energy drops quicker towards equilibrium than the other sampling methods, before it oscillates a little around the equilibrium energy. The local energy which the solutions converge towards wit Gibbs sampling, are clearly a little closer to the analytical ground state energy than the other two sampling methods when we vary the learning rate. Like the other cases, a higher learning rate gives faster equilibrium where $\eta=0.1$ uses a lot more SGC cycles to reach equilibrium than the others. The two highest learning rates are close to each other like earlier. The best learning rate seems to be $\eta=0.2$, like before.
 
 \begin{figure}[t!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Int_Gib_learnrate.png}
-	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.7$ for two interacting electrons in 2D. For lower learning rates the solution approaches equilibrium faster than bigger learning rates in the beginning, but they all reach equilibrium around 200 SGD cycles. \label{fig:check_learnrate_Int_Gib}}
+	\caption{Local energy as function of the SGD cycle for various learning rates with the Gibbs sampling and $\sigma=0.7$ for two interacting electrons in 2D. The higher the learning rate is, the faster the solution converges towards equilibrium energy. \label{fig:check_learnrate_Int_Gib}}
 \end{figure}
 
 \newpage
-In Figure \ref{fig:check_hidden_Int_Gib} we vary the number of hidden nodes using the best learning rate with Gibbs sampling. The local energy drops quickly towards equilibrium in the beginning, which is still not around the expected analytical ground state energy, before it flattens out. The exception is with two hidden nodes. There the local energy drops a little more in the beginning than for the others, before it increases and reaches equilibrium at around the same time as for the other number of hidden nodes around 200 SGD cycles. 
+In Figure \ref{fig:check_hidden_Int_Gib} we vary the number of hidden nodes using the best learning rate with Gibbs sampling. Like for Metropolis and Importance, using one hidden node gives a much higher local energy. With two, three and four hidden nodes we get convergence towards a local energy of around 3.05-3.06 a.u. Once again, using more hidden nodes in our NN leads to a faster convergence towards equilibrium. After around 250 SGD cycles we see that all solutions seem to have reached equilibrium energy.
 
 \begin{figure}[t!]
 	\centering\includegraphics[width=0.8\linewidth, height=0.8\linewidth]{Hidden_Int_Gib.png}
-	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Gibbs sampling, $\sigma=0.7$ and $\eta=0.2$ for two interacting electrons in 2D. They all converge in a similar matter, except for two hidden nodes which drops more in the beginning before it increases towards equilibrium. \label{fig:check_hidden_Int_Gib}}
+	\caption{Local energy as function of the SGD cycle for various number of hidden nodes with the Gibbs sampling, $\sigma=0.7$ and $\eta=0.2$ for two interacting electrons in 2D. Using more than one hidden node seem to give good convergence towards equilibrium. \label{fig:check_hidden_Int_Gib}}
 \end{figure}
 
 \newpage
 \subsubsection{Local Energy Analysis of Sampling Methods}
 \label{subsubsect:Results_int_Analysis}
-With the best parameters for the three sampling methods, we look more at how the computed local energies are as we vary the number of hidden nodes. The final local energies for two interacting electrons in 2D can be seen in Table \ref{tab:Int_energies}. Here we have used $N_{SGD}=600$ and $\eta=0.2$ for all the sampling methods, and used the same best sampling parameters as in the non-interacting cases.
+With the best parameters for the three sampling methods, we look more at how the computed local energies are as we vary the number of hidden nodes. The final local energies for two interacting electrons in 2D can be seen in Table \ref{tab:Int_energies}. The blocking method is applied on the produced energy data with a linear regression fit after equilibrium. Here we have used $N_{SGD}=600$ and $\eta=0.2$ for all the sampling methods, and used the same best sampling parameters as in the non-interacting cases.
 
-In the non-interacting case we got that the Gibbs sampling gave the best solution. We would also expect this in the interacting case since the sampling method should not change the solution of the model that significantly, but because of some unknown numerical error the Gibbs sampling does not converge towards the analytical ground state energy. In this case the standard Metropolis gives slightly better average energies, while the Importance sampling error is smaller than the standard Metropolis. Even though the Gibbs method does not converge correct, it provides the smallest errors. Like with the non-interacting system, the Metropolis is the fastest method and Importance is the slowest method of the three.
+In the non-interacting case we got that the Gibbs sampling gave the best solutions. We would also expect this in the interacting case since the sampling method should not change the solution of the model that significantly, this is also the case with interaction in our system. In this case the standard Metropolis gives slightly better average energies than Importance. The Gibbs method is clearly the best sampling method, which we see by looking at the computed local average energies in the table for various hidden nodes. The best average energies for each sampling method is when we use two hidden nodes.
 
-Also here, the CPU time for doing the computations increase when we use a higher number of hidden nodes. When we use one hidden node, wee see that the local energies are higher than for more hidden nodes.
+Like with the non-interacting system, the Metropolis is the fastest method and Importance is the slowest method of the three regarding CPU time. Also here, the CPU time for doing the energy computations increase when we use a higher number of hidden nodes. Using one hidden node gives the fastest CPU time, but gives a higher final energy for all sampling methods.
 
 \begin{table}[htbp!]
 	\centering
 	%\hspace{-1.0cm}
 	\begin{tabular}{ |c|c|c|c|c|c|c| }
-		\hline \rule{0pt}{13pt}
+		\hline \rule{0pt}{14pt}
 		$N_P$ & D & $N_H$ & $E_A$ & $E_L^M$ & $E_L^I$ & $E_L^G$ \\
 		\hline \rule{0pt}{13pt}%
-		2 & 2 & 1 & 3.0 & 3.139$\pm1.6\cdot10^{-4}$ & 3.144$\pm4.0\cdot10^{-5}$ & 4.375$\pm4.9\cdot10^{-6}$ \\
+		2 & 2 & 1 & 3.0 & 3.140$\pm1.3\cdot10^{-5}$ & 3.144$\pm4.0\cdot10^{-5}$ & 3.131$\pm5.3\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 2 & 3.0 & 3.079$\pm1.3\cdot10^{-4}$ & 3.081$\pm1.2\cdot10^{-4}$ & 4.374$\pm7.8\cdot10^{-6}$ \\
+		2 & 2 & 2 & 3.0 & 3.081$\pm7.7\cdot10^{-5}$ & 3.081$\pm1.2\cdot10^{-4}$ & 3.062$\pm5.2\cdot10^{-5}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 3 & 3.0 & 3.083$\pm1.4\cdot10^{-4}$ & 3.084$\pm3.3\cdot10^{-5}$ & 4.374$\pm2.6\cdot10^{-6}$ \\
+		2 & 2 & 3 & 3.0 & 3.082$\pm1.9\cdot10^{-4}$ & 3.084$\pm3.3\cdot10^{-5}$ & 3.066$\pm2.8\cdot10^{-4}$ \\
 		%\hline \rule{0pt}{13pt}
-		2 & 2 & 4 & 3.0 & 3.086$\pm2.2\cdot10^{-4}$ & 3.086$\pm3.5\cdot10^{-5}$ & 4.374$\pm2.6\cdot10^{-6}$ \\
+		2 & 2 & 4 & 3.0 & 3.084$\pm8.7\cdot10^{-5}$ & 3.086$\pm3.5\cdot10^{-5}$ & 3.067$\pm4.2\cdot10^{-5}$ \\
 		\hline
 	\end{tabular}	
-	\caption{Table for the final local energy of interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). \label{tab:Int_energies}}
+	\caption{Table for the final local energy of interacting electrons with the three sampling methods Metropolis ($E_L^M$), Importance ($E_L^I$) and Gibbs ($E_L^G$) with blocking errors, and the analytical ground state energy ($E_A$). The Gibbs sampling method provides the best average energies. \label{tab:Int_energies}}
 \end{table}
 
 
 \section{Conclusion}
 \label{sect:Conclusion}
-In this project we have used a restricted Boltzmann machine and neural network with a variational Monte Carlo method to compute the ground state energy of interacting and non-interacting systems consisting of electrons in a 2D isotropic harmonic oscillator potential. These ground state energies have been computed both analytically and numerically to check how well the RBM neural network can reproduce the energy of the system. To do this we have used the standard brute-force Metropolis sampling, Importance sampling and Gibbs sampling methods. To optimize the system we also used a stochastic gradient descent method, and used blocking for a statistical analysis of the errors. With these methods we look at different choices of parameters for each method to see how they affected our computation of the ground state energies.
+In this project we have used a restricted Boltzmann machine and neural network with a variational Monte Carlo method to compute the ground state energy of interacting and non-interacting systems consisting of electrons in a 2D isotropic harmonic oscillator potential. These ground state energies have been computed both analytically and numerically to check how well the RBM neural network can reproduce the energy of the system. To do this we have used the standard brute-force Metropolis sampling, Importance sampling and Gibbs sampling methods. To optimize the system we also used a stochastic gradient descent method with a constant learning rate, and used blocking for a statistical analysis of the energy errors. With these methods we looked at different choices of parameters for each sampling method to see how they affected our computation of the ground state energies.
 
 In the non-interacting case we got energies very close to the analytically calculated ground state energies for all the three sampling methods. Here the Gibbs sampling gave the best solutions with the smallest errors. The Metropolis method was the fastest method in CPU time, but it also gave slightly worse solutions than the other two sampling methods.
 
-For the interacting case we got energies a little higher than the analytically calculated energies. For the Metropolis and Importance methods, we got reasonably good energies close to the analytical energies. The Metropolis was also the fastest method in CPU time here, while Importance was the slowest but gave a better error than Metropolis. The Gibbs method did not converge towards the expected analytical energy when interaction was involved. This leads us to assume that something was not working properly with the program. The program works very well for all three sampling methods when there is no interaction in the system. Even when there is interaction, the Metropolis and Importance get close to the analytical result. So it is weird that only Gibbs sampling with interaction gives us that much higher energy than the exact solution is.
+For the interacting case we got energies a little higher than the analytically calculated energies. For all three sampling methods, we got reasonably good energies close to the analytical energies. The Metropolis was also the fastest method in CPU time here, and gave energies a little better than the Importance method, which where the slowest method again. As for non-interacting electrons, the Gibbs sampling method gave the best local energies closest to the analytical ground state energies. 
+
+From our analysis in this project, we can conclude that the Gibbs sampling method seems to be the best sampling method for this RBM NN system with electrons.
 
 For future work, we could try to use other optimization methods like ADAM. We could also do a steepest descent method on some of the parameters we have used to make them adapt to make a better fit to the evolving behavior of the system. To get faster CPU times we could implement parallelization by using MPI. The system we have looked at in this project did not include Pauli's principle. So this is also something we could implement in future work, and eventually extend our system with more particles with higher dimensions.
 
